@@ -1,0 +1,64 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateProductInput {
+  description: String
+  image_url: String
+  name: String!
+  price: Float!
+  status: String
+  stock: Int!
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+type Mutation {
+  """Membuat produk baru."""
+  createProduct(input: CreateProductInput!): ProductDTO!
+
+  """Menghapus produk berdasarkan ID."""
+  deleteProduct(product_id: ID!): Boolean!
+
+  """Memperbarui produk yang sudah ada."""
+  updateProduct(input: UpdateProductInput!, product_id: ID!): ProductDTO!
+}
+
+type ProductDTO {
+  created_at: String!
+  description: String
+  image_url: String
+  name: String!
+  price: Float!
+  product_id: ID!
+  status: String!
+  stock: Int!
+  updated_at: String
+}
+
+input ProductFilters {
+  maxPrice: Float
+  maxStock: Int
+  minPrice: Float
+  minStock: Int
+  search: String
+  status: String
+}
+
+type Query {
+  """Mengambil daftar semua produk, bisa difilter."""
+  allProducts(filters: ProductFilters): [ProductDTO!]!
+
+  """Mengambil detail produk berdasarkan ID."""
+  product(product_id: ID!): ProductDTO
+}
+
+input UpdateProductInput {
+  description: String
+  image_url: String
+  name: String
+  price: Float
+  status: String
+  stock: Int
+}
