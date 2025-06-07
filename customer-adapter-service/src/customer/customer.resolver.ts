@@ -55,7 +55,7 @@
       async resolveReference(reference: { __typename: string; id: string }): Promise<CustomerDTO> {
         const customer = await this.customerService.getCustomerById(reference.id);
         if (!customer) {
-          throw new NotFoundException(`Customer with ID ${reference.id} not found.`); // <-- Baris ini
+          throw new NotFoundException(`Customer with ID ${reference.id} not found.`); 
         }
         return customer;
       }

@@ -2,16 +2,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'; // Tambahkan NotFoundException
 import axios from 'axios';
 import { CustomerDTO, CreateCustomerInput, UpdateCustomerInput, CustomerFilters } from './dto/customer.dto';
-// Hapus import ProductService dan OrderService jika ada sebelumnya
-// import { ProductService } from '../product/product.service';
-// import { OrderService } from '../order/order.service';
 
 @Injectable()
 export class CustomerService {
-  // Endpoint CRM Anda (pastikan ini sesuai, biasanya http://localhost:3000)
   private readonly CRM_GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql';
 
-  // Header untuk autentikasi (jika diperlukan oleh CRM)
+  // Header untuk autentikasi (jika diperlukan)
   private readonly AUTH_HEADERS = {
     // 'Authorization': 'Bearer YOUR_CRM_API_KEY_OR_TOKEN', // Uncomment & ganti jika CRM butuh auth
     'Content-Type': 'application/json',
@@ -30,9 +26,7 @@ export class CustomerService {
     customerDTO.city = crmCustomer.city ?? null;
     customerDTO.postal_code = crmCustomer.postal_code ?? null;
     customerDTO.country = crmCustomer.country ?? null;
-    
     customerDTO.created_at = crmCustomer.created_at || '';
-    // customerDTO.updated_at DIHAPUS
 
     return customerDTO;
   }
@@ -222,7 +216,7 @@ export class CustomerService {
         console.error('CRM GraphQL Errors in deleteCustomer:', response.data.errors);
         throw new InternalServerErrorException('CRM API returned errors for customer deletion.');
       }
-      return response.data.data.deleteCustomer; // CRM's deleteCustomer returns Boolean!
+      return response.data.data.deleteCustomer; 
     } catch (error) {
       console.error('Error deleting customer in CRM:', error.response?.data || error.message);
       throw new InternalServerErrorException('Failed to delete customer in CRM.');
