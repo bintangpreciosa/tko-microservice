@@ -1,0 +1,88 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateOrderInput {
+  customer_crm_id: String!
+  items: [CreateOrderItemInput!]!
+  shipping_address_city: String
+  shipping_address_country: String
+  shipping_address_postal_code: String
+  shipping_address_street: String
+}
+
+input CreateOrderItemInput {
+  product_id: Int!
+  quantity: Int!
+}
+
+type CustomerReference {
+  email: String
+  id: ID!
+  name: String
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+type Mutation {
+  """Membuat pesanan baru."""
+  createOrder(input: CreateOrderInput!): OrderDTO!
+
+  """Menghapus pesanan berdasarkan ID."""
+  deleteOrder(order_id: ID!): Boolean!
+
+  """Memperbarui status pesanan."""
+  updateStatus(order_id: ID!, payment_status: String, shipping_status: String): OrderDTO!
+}
+
+type OrderDTO {
+  created_at: String!
+  customer: CustomerReference!
+  customerFullNameAndEmail: String
+  customer_crm_id: String!
+  order_date: String!
+  order_id: ID!
+  order_items: [OrderItemDTO!]!
+  payment_status: String
+  product: ProductReference!
+  productDisplayInfo: String
+  shipping_address_city: String
+  shipping_address_country: String
+  shipping_address_postal_code: String
+  shipping_address_street: String
+  shipping_status: String
+  total_price: Float!
+  updated_at: String
+}
+
+input OrderFilters {
+  customer_crm_id: String
+  payment_status: String
+  shipping_status: String
+}
+
+type OrderItemDTO {
+  order_id: Int!
+  order_item_id: ID!
+  price: Float!
+  product: ProductReference!
+  product_id: Int!
+  product_name: String!
+  quantity: Int!
+}
+
+type ProductReference {
+  name: String
+  price: Float
+  product_id: ID!
+  stock: Int
+}
+
+type Query {
+  """Mengambil daftar semua pesanan, bisa difilter."""
+  allOrders(filters: OrderFilters): [OrderDTO!]!
+
+  """Mengambil detail pesanan berdasarkan ID."""
+  order(order_id: ID!): OrderDTO
+}

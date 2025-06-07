@@ -1,0 +1,68 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateCustomerInput {
+  address: String
+  city: String
+  country: String
+  email: String!
+  name: String!
+  phone: String
+  postal_code: String
+}
+
+type CustomerConnection {
+  customers: [CustomerDTO!]!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  totalCount: Int!
+}
+
+type CustomerDTO {
+  address: String
+  city: String
+  country: String
+  created_at: String!
+  email: String!
+  id: ID!
+  logins: [CustomerLogin!]
+  name: String!
+  phone: String
+  postal_code: String
+}
+
+input CustomerFilters {
+  city: String
+  country: String
+  limit: Int
+  offset: Int
+  search: String
+}
+
+type CustomerLogin {
+  customer_id: Int!
+  id: ID!
+  login_time: String!
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+type Mutation {
+  """Membuat customer baru di CRM Service."""
+  createCustomer(input: CreateCustomerInput!): CustomerDTO!
+
+  """Menghapus customer dari CRM Service."""
+  deleteCustomer(id: ID!): Boolean!
+}
+
+type Query {
+  """Mengambil detail customer berdasarkan ID dari CRM Service."""
+  customer(id: ID!): CustomerDTO
+
+  """
+  Mengambil daftar semua customer dari CRM Service, dengan filter opsional.
+  """
+  customers(filters: CustomerFilters): CustomerConnection!
+}
