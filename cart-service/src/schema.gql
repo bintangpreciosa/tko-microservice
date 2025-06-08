@@ -1,0 +1,87 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AddToCartInput {
+  customer_crm_id: String
+  product_id: Int!
+  quantity: Int!
+  session_id: String
+}
+
+type CartDTO {
+  cart_id: ID!
+  cart_items: [CartItemDTO!]!
+  created_at: String!
+  customer: CustomerReference
+  customer_crm_id: String
+  product: ProductReference!
+  session_id: String
+  total_price: Float!
+  updated_at: String!
+}
+
+type CartItemDTO {
+  cart_id: Int!
+  cart_item_id: ID!
+  price: Float!
+  product: ProductReference!
+  product_id: Int!
+  product_name: String!
+  quantity: Int!
+}
+
+type CustomerReference {
+  email: String
+  id: ID!
+  name: String
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+input GetCartInput {
+  cart_id: ID
+  customer_crm_id: String
+  session_id: String
+}
+
+type Mutation {
+  """Menambahkan produk ke keranjang belanja."""
+  addToCart(input: AddToCartInput!): CartDTO!
+
+  """Mengosongkan seluruh keranjang belanja."""
+  clearCart(input: GetCartInput!): Boolean!
+
+  """Menghapus keranjang belanja sepenuhnya berdasarkan ID."""
+  deleteCart(cart_id: ID!): Boolean!
+
+  """Menghapus item dari keranjang belanja."""
+  removeCartItem(input: RemoveFromCartInput!): CartDTO!
+
+  """Memperbarui kuantitas item di keranjang belanja."""
+  updateCartItemQuantity(input: UpdateCartItemInput!): CartDTO!
+}
+
+type ProductReference {
+  name: String
+  price: Float
+  product_id: ID!
+  stock: Int
+}
+
+type Query {
+  """
+  Mendapatkan keranjang belanja berdasarkan customer_crm_id atau session_id.
+  """
+  cart(input: GetCartInput!): CartDTO
+}
+
+input RemoveFromCartInput {
+  cart_item_id: ID!
+}
+
+input UpdateCartItemInput {
+  cart_item_id: ID!
+  quantity: Int!
+}

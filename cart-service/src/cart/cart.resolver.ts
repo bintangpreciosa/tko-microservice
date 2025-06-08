@@ -1,8 +1,8 @@
 // src/cart/cart.resolver.ts
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, ResolveReference } from '@nestjs/graphql';
 import { CartService } from './cart.service';
-import { CartDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCartInput, GetCartInput } from './dto/cart.dto';
-import { BadRequestException } from '@nestjs/common';
+import { CartDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCartInput, GetCartInput, ProductReference, CustomerReference, CartItemDTO } from './dto/cart.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 @Resolver(() => CartDTO)
 export class CartResolver {
@@ -11,7 +11,6 @@ export class CartResolver {
   // Query untuk mendapatkan keranjang belanja
   @Query(() => CartDTO, { nullable: true, description: 'Mendapatkan keranjang belanja berdasarkan customer_crm_id atau session_id.' })
   async cart(@Args('input') input: GetCartInput): Promise<CartDTO | null> {
-    // Pastikan salah satu ID diberikan
     if (!input.customer_crm_id && !input.session_id) {
         throw new BadRequestException('Either customer_crm_id or session_id must be provided to get a cart.');
     }
@@ -21,7 +20,6 @@ export class CartResolver {
   // Mutation untuk menambahkan produk ke keranjang
   @Mutation(() => CartDTO, { description: 'Menambahkan produk ke keranjang belanja.' })
   async addToCart(@Args('input') input: AddToCartInput): Promise<CartDTO> {
-    // Pastikan salah satu ID diberikan
     if (!input.customer_crm_id && !input.session_id) {
         throw new BadRequestException('Either customer_crm_id or session_id must be provided to add to cart.');
     }
@@ -43,7 +41,6 @@ export class CartResolver {
   // Mutation untuk mengosongkan seluruh keranjang
   @Mutation(() => Boolean, { description: 'Mengosongkan seluruh keranjang belanja.' })
   async clearCart(@Args('input') input: GetCartInput): Promise<boolean> {
-    // Pastikan salah satu ID diberikan
     if (!input.customer_crm_id && !input.session_id) {
         throw new BadRequestException('Either customer_crm_id or session_id must be provided to clear cart.');
     }
@@ -55,4 +52,28 @@ export class CartResolver {
   async deleteCart(@Args('cart_id', { type: () => ID }) cart_id: number): Promise<boolean> {
     return this.cartService.deleteCart(cart_id);
   }
+
+  // @ResolveReference untuk CartDTO (agar Gateway tahu cara mengambil Cart)
+  @ResolveReference()
+      async resolveReference(reference: { __typename: string; cart_id: string }): Promise<CartDTO> {
+        const cart = await this.cartService.getCart({ cart_id: parseInt(reference.cart_id, 10) });
+        if (!cart) {
+          // Throw NotFoundException jika cart tidak ditemukan
+          throw new NotFoundException(`Cart with ID ${reference.cart_id} not found.`);
+        }
+        return cart;
+      }
+
+
+  // Field Resolver untuk Customer di dalam CartDTO
+  @ResolveField('customer', () => CustomerReference, { nullable: true })
+      async getCustomer(@Parent() cart: CartDTO): Promise<CustomerReference | null> {
+        if (!cart.customer_crm_id) return null;
+        return { id: cart.customer_crm_id };
+      }
+
+      @ResolveField('product', () => ProductReference)
+      async getProduct(@Parent() cartItem: CartItemDTO): Promise<ProductReference> {
+        return { product_id: cartItem.product_id };
+}
 }
