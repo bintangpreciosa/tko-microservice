@@ -1,0 +1,69 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateShipmentInput {
+  courier_name: String
+  order_id: ID!
+  status: String
+  tracking_number: String
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+type Mutation {
+  """Membuat pengiriman baru."""
+  createShipment(input: CreateShipmentInput!): ShipmentDTO!
+
+  """Menghapus pengiriman berdasarkan ID."""
+  deleteShipment(shipment_id: ID!): Boolean!
+
+  """Memperbarui pengiriman yang sudah ada."""
+  updateShipment(input: UpdateShipmentInput!, shipment_id: ID!): ShipmentDTO!
+}
+
+type OrderRefDTO {
+  order_id: ID!
+  payment_status: String
+  shipping_status: String
+}
+
+type Query {
+  """Mendapatkan daftar semua pengiriman (dapat difilter)."""
+  allShipments(filters: ShipmentFilters): [ShipmentDTO!]!
+
+  """Mendapatkan detail pengiriman berdasarkan ID."""
+  shipment(shipment_id: ID!): ShipmentDTO
+}
+
+type ShipmentDTO {
+  courier_name: String
+  created_at: String!
+  delivery_date: String
+  order: OrderRefDTO
+  order_id: ID!
+  shipment_date: String
+  shipment_id: ID!
+  shipping_address_city: String
+  shipping_address_country: String
+  shipping_address_postal_code: String
+  shipping_address_street: String
+  status: String!
+  tracking_number: String
+  updated_at: String!
+}
+
+input ShipmentFilters {
+  courier_name: String
+  order_id: ID
+  status: String
+}
+
+input UpdateShipmentInput {
+  courier_name: String
+  delivery_date: String
+  shipment_date: String
+  status: String
+  tracking_number: String
+}
