@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreatePaymentInput {
+  amount: Float!
+  order_id: ID!
+  payment_method: String!
+}
+
+"""DateTime custom scalar type from ISO 8601 string"""
+scalar DateTime
+
+type Mutation {
+  """Membuat pembayaran baru."""
+  createPayment(input: CreatePaymentInput!): PaymentDTO!
+
+  """Menghapus pembayaran berdasarkan ID."""
+  deletePayment(payment_id: ID!): Boolean!
+
+  """Memperbarui status pembayaran."""
+  updatePaymentStatus(payment_id: ID!, payment_status: String!): PaymentDTO!
+}
+
+type OrderRefDTO {
+  order_id: ID!
+  payment_status: String
+}
+
+type PaymentDTO {
+  amount: Float!
+  order: OrderRefDTO
+  order_id: ID!
+  payment_date: String!
+  payment_id: ID!
+  payment_method: String!
+  payment_status: String!
+}
+
+type Query {
+  """Mengambil daftar semua pembayaran."""
+  allPayments: [PaymentDTO!]!
+
+  """Mengambil detail pembayaran berdasarkan ID."""
+  payment(payment_id: ID!): PaymentDTO
+}

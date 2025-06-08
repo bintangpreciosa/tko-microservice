@@ -2,10 +2,13 @@
 import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, Int, ResolveReference } from '@nestjs/graphql';
 import { OrderService } from './order.service';
 import { OrderDTO, CreateOrderInput, UpdateOrderInput, OrderFilters, OrderItemDTO, ProductReference, CustomerReference } from './dto/order.dto';
-import { NotFoundException } from '@nestjs/common'; 
+import { NotFoundException } from '@nestjs/common';
 
 @Resolver(() => OrderDTO)
 export class OrderResolver {
+  // Endpoint microservice lain (sesuaikan port jika berbeda)
+  private readonly CUSTOMER_ADAPTER_SERVICE_URL = 'http://localhost:4006/graphql';
+  private readonly PRODUCT_SERVICE_URL = 'http://localhost:4001/graphql';
 
   constructor(
     private readonly orderService: OrderService,
@@ -57,30 +60,38 @@ export class OrderResolver {
   }
 
   // Field Resolver untuk Customer di dalam OrderDTO
+  // Ini memberitahu Gateway bahwa field 'customer' di OrderDTO akan diselesaikan oleh Customer Adapter Service
   @ResolveField('customer', () => CustomerReference)
-  async getCustomer(@Parent() order: OrderDTO): Promise<CustomerReference> {
-    return { id: order.customer_crm_id };
-  }
+async getCustomer(@Parent() order: OrderDTO): Promise<CustomerReference> {
+  return { id: order.customer_crm_id }; // penting
+}
 
-  @ResolveField('customerFullNameAndEmail', () => String, { nullable: true })
-      async getCustomerFullNameAndEmail(@Parent() customer: CustomerReference): Promise<string | null> {
-        if (customer.name && customer.email) {
-            return `${customer.name} (${customer.email})`;
-        }
-        return null;
-      }
+  // Field Resolver untuk Customer Full Name dan Email di dalam OrderDTO
+  // Menggunakan @requires untuk mendapatkan name dan email dari Customer Subgraph
+  // @ResolveField('customerFullNameAndEmail', () => String, { nullable: true })
+  // async getCustomerFullNameAndEmail(@Parent() customer: CustomerReference): Promise<string | null> {
+  //   // Parent objek 'customer' di sini sudah akan memiliki 'name' dan 'email' karena directive @requires di OrderDTO
+  //   if (customer.name && customer.email) {
+  //     return `${customer.name} (${customer.email})`;
+  //   }
+  //   return null;
+  // }
 
   // Field Resolver untuk Product di dalam OrderItemDTO
+  // Ini memberitahu Gateway bahwa field 'product' di OrderItemDTO akan diselesaikan oleh Product Service
   @ResolveField('product', () => ProductReference)
-  async getProduct(@Parent() orderItem: OrderItemDTO): Promise<ProductReference> {
-    return { product_id: orderItem.product_id };
-  }
+async getProduct(@Parent() orderItem: OrderItemDTO): Promise<ProductReference> {
+  return { product_id: orderItem.product_id }; // penting
+}
 
-  @ResolveField('productDisplayInfo', () => String, { nullable: true })
-      async getProductDisplayInfo(@Parent() product: ProductReference): Promise<string | null> {
-        if (product.name && product.price) {
-            return `${product.name} - Rp${product.price.toLocaleString('id-ID')}`;
-        }
-        return null;
-      }
+  // Field Resolver untuk Product Display Info di dalam OrderItemDTO
+  // Menggunakan @requires untuk mendapatkan name dan price dari Product Subgraph
+  // @ResolveField('productDisplayInfo', () => String, { nullable: true })
+  // async getProductDisplayInfo(@Parent() product: ProductReference): Promise<string | null> {
+  //   // Parent objek 'product' di sini sudah akan memiliki 'name' dan 'price' karena directive @requires di OrderItemDTO
+  //   if (product.name && product.price) {
+  //     return `${product.name} - Rp${product.price.toLocaleString('id-ID')}`;
+  //   }
+  //   return null;
+  // }
 }

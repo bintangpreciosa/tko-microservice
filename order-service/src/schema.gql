@@ -46,7 +46,6 @@ type OrderDTO {
   order_items: [OrderItemDTO!]!
   payment_status: String
   product: ProductReference!
-  productDisplayInfo: String
   shipping_address_city: String
   shipping_address_country: String
   shipping_address_postal_code: String
@@ -67,6 +66,7 @@ type OrderItemDTO {
   order_item_id: ID!
   price: Float!
   product: ProductReference!
+  productDisplayInfo: String
   product_id: Int!
   product_name: String!
   quantity: Int!
