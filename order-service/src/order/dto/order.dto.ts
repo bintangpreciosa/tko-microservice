@@ -1,26 +1,20 @@
 // src/order/dto/order.dto.ts
-
 import { Field, ID, ObjectType, InputType, Float, Int, Directive } from '@nestjs/graphql';
-
-
 
 @ObjectType()
 @Directive('@extends')
 @Directive('@key(fields: "product_id")')
 export class ProductReference {
  @Field(() => ID)
-  product_id: number; // product_id tidak perlu @external karena sudah @key
+  product_id: number; 
 
   @Field(() => String, { nullable: true })
-      // @Directive('@external') // <-- HAPUS INI
       name?: string;
 
       @Field(() => Float, { nullable: true })
-      // @Directive('@external') // <-- HAPUS INI
       price?: number;
 
       @Field(() => Int, { nullable: true })
-      // @Directive('@external') // <-- HAPUS INI
       stock?: number;
     }
 
@@ -29,14 +23,12 @@ export class ProductReference {
     @Directive('@key(fields: "id")')
     export class CustomerReference {
       @Field(() => ID)
-      id: string; // id tidak perlu @external karena sudah @key
+      id: string; 
 
       @Field(() => String, { nullable: true })
-      // @Directive('@external') // <-- HAPUS INI
       name?: string;
 
       @Field(() => String, { nullable: true })
-      // @Directive('@external') // <-- HAPUS INI
       email?: string;
     }
 
@@ -64,12 +56,7 @@ export class ProductReference {
 
       @Field(() => Float)
       price: number; 
-
-      // Field ini memerlukan 'name' dan 'price' dari ProductReference (yang merupakan @external)
-      // Field ini digunakan di resolver untuk menggabungkan info produk
-      // Directive @requires ini akan membutuhkan ProductReference.name dan .price ditandai @external
       @Field(() => String, { nullable: true })
-      // @Directive('@requires(fields: "product { name price }")')
       productDisplayInfo?: string; 
     }
 
@@ -118,16 +105,13 @@ export class ProductReference {
       @Field(() => [OrderItemDTO]) 
       order_items: OrderItemDTO[];
 
-      // Field ini memerlukan 'name' dan 'email' dari CustomerReference (yang merupakan @external)
-      // Directive @requires ini akan membutuhkan CustomerReference.name dan .email ditandai @external
       @Field(() => String, { nullable: true })
-      // @Directive('@requires(fields: "customer { name email }")')
       customerFullNameAndEmail?: string;
     }
 
 
 @InputType()
-    export class CreateOrderItemInput { // <-- TAMBAHKAN 'export' DI SINI
+    export class CreateOrderItemInput { 
       @Field(() => Int)
       product_id: number;
 
@@ -136,7 +120,7 @@ export class ProductReference {
     }
 
     @InputType()
-    export class CreateOrderInput { // <-- TAMBAHKAN 'export' DI SINI
+    export class CreateOrderInput { 
       @Field(() => String) 
       customer_crm_id: string;
 

@@ -170,9 +170,9 @@ export class OrderService {
       
       const orderItem = new OrderItem();
       orderItem.product_id = itemInput.product_id;
-      orderItem.product_name = product.name; // Ambil nama produk dari Product Service
+      orderItem.product_name = product.name; 
       orderItem.quantity = itemInput.quantity;
-      orderItem.price = product.price; // Ambil harga dari Product Service
+      orderItem.price = product.price; 
       orderItems.push(orderItem);
 
       total_price += itemInput.quantity * product.price;

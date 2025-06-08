@@ -47,7 +47,4 @@ export class Order {
   @OneToMany(() => OrderItem, orderItem => orderItem.order, { cascade: true })
   order_items: OrderItem[];
 
-  // *** TAMBAHAN BARU: Relasi One-to-Many dengan Payment ***
-//   @OneToMany(() => Payment, payment => payment.order)
-//   payments: Payment[]; // Properti ini akan menampung array Payment terkait
 }
