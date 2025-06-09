@@ -11,12 +11,15 @@ export class ProductReference {
 
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   name?: string;
 
   @Field(() => Float, { nullable: true })
+  @Directive('@shareable')
   price?: number;
 
   @Field(() => Int, { nullable: true })
+  @Directive('@shareable')
   stock?: number;
 }
 
@@ -29,9 +32,11 @@ export class CustomerReference {
   id: string;
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   name?: string;
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   email?: string;
 }
 
@@ -43,21 +48,26 @@ export class CartItemDTO {
   cart_item_id: number;
 
   @Field(() => Int)
+  @Directive('@shareable')
   cart_id: number;
 
   @Field(() => Int)
+  @Directive('@shareable')
   product_id: number;
 
   @Field(() => ProductReference)
   product: ProductReference;
 
   @Field()
+  @Directive('@shareable')
   product_name: string;
 
   @Field(() => Int)
+  @Directive('@shareable')
   quantity: number;
 
   @Field(() => Float)
+  @Directive('@shareable')
   price: number;
 }
 
@@ -68,24 +78,29 @@ export class CartDTO {
   cart_id: number;
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   customer_crm_id?: string | null;
 
   @Field(() => CustomerReference, { nullable: true })
   customer?: CustomerReference | null;
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   session_id?: string | null;
 
   @Field(() => String)
+  @Directive('@shareable')
   created_at: string;
 
   @Field(() => String)
+  @Directive('@shareable')
   updated_at: string;
 
   @Field(() => [CartItemDTO])
   cart_items: CartItemDTO[];
 
   @Field(() => Float)
+  @Directive('@shareable')
   total_price: number;
 }
 

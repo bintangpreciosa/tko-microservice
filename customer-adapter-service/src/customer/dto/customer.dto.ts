@@ -20,27 +20,35 @@ export class CustomerDTO {
   id: string;
 
   @Field()
+  @Directive('@shareable')
   name: string;
 
   @Field()
+  @Directive('@shareable')
   email: string;
 
   @Field({ nullable: true })
+  @Directive('@shareable')
   phone?: string;
 
   @Field({ nullable: true })
+  @Directive('@shareable')
   address?: string;
 
   @Field({ nullable: true })
+  @Directive('@shareable')
   city?: string;
 
   @Field({ nullable: true })
+  @Directive('@shareable')
   postal_code?: string;
 
   @Field({ nullable: true })
+  @Directive('@shareable')
   country?: string;
 
   @Field(() => String) 
+  @Directive('@shareable')
   created_at: string;
 
   @Field(() => [CustomerLogin], { nullable: true })

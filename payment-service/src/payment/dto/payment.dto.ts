@@ -10,6 +10,7 @@ export class OrderRefDTO {
   order_id: number;
 
   @Field(() => String, { nullable: true })
+  @Directive('@shareable')
   payment_status?: string;
 }
 
@@ -21,21 +22,27 @@ export class PaymentDTO {
   payment_id: number;
 
   @Field(() => ID)
+  @Directive('@shareable')
   order_id: number;
 
-  @Field(() => OrderRefDTO, { nullable: true }) 
+  @Field(() => OrderRefDTO, { nullable: true })
+  @Directive('@shareable') 
   order?: OrderRefDTO;
 
   @Field(() => Float)
+  @Directive('@shareable')
   amount: number;
 
   @Field()
+  @Directive('@shareable')
   payment_method: string;
 
   @Field()
+  @Directive('@shareable')
   payment_status: string;
 
   @Field()
+  @Directive('@shareable')
   payment_date: string; 
 }
 

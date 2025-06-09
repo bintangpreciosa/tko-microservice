@@ -2,19 +2,23 @@
 import { Field, ID, ObjectType, InputType, Float, Int, Directive } from '@nestjs/graphql';
 
 @ObjectType()
-@Directive('@extends')
-@Directive('@key(fields: "product_id")')
-export class ProductReference {
- @Field(() => ID)
-  product_id: number; 
+    @Directive('@extends')
+    @Directive('@key(fields: "product_id")')
+    export class ProductReference {
+      @Field(() => ID)
+      @Directive('@external')
+      product_id: number; 
 
-  @Field(() => String, { nullable: true })
+      @Field(() => String, { nullable: true })
+      @Directive('@external') 
       name?: string;
 
       @Field(() => Float, { nullable: true })
+      @Directive('@external') 
       price?: number;
 
       @Field(() => Int, { nullable: true })
+      // @Directive('@external') 
       stock?: number;
     }
 
@@ -23,12 +27,15 @@ export class ProductReference {
     @Directive('@key(fields: "id")')
     export class CustomerReference {
       @Field(() => ID)
+      @Directive('@external')
       id: string; 
 
       @Field(() => String, { nullable: true })
+      @Directive('@external')
       name?: string;
 
       @Field(() => String, { nullable: true })
+      @Directive('@external')
       email?: string;
     }
 
@@ -52,11 +59,13 @@ export class ProductReference {
       product_name: string; 
 
       @Field(() => Int)
-      quantity: number;
+      quantity: number; 
 
       @Field(() => Float)
       price: number; 
+
       @Field(() => String, { nullable: true })
+      @Directive('@requires(fields: "product { name price }")')
       productDisplayInfo?: string; 
     }
 
@@ -67,45 +76,58 @@ export class ProductReference {
       order_id: number;
 
       @Field(() => String) 
+      @Directive('@shareable') 
       customer_crm_id: string;
 
       @Field(() => CustomerReference) 
+      @Directive('@shareable') 
       customer: CustomerReference; 
 
       @Field(() => String)
+      @Directive('@shareable')
       order_date: string;
 
       @Field(() => Float)
+      @Directive('@shareable')
       total_price: number;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       payment_status?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_status?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_street?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_city?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_postal_code?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_country?: string | null;
 
       @Field(() => String)
+      @Directive('@shareable')
       created_at: string;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       updated_at?: string;
 
       @Field(() => [OrderItemDTO]) 
       order_items: OrderItemDTO[];
 
       @Field(() => String, { nullable: true })
+      @Directive('@requires(fields: "customer { name email }")')
       customerFullNameAndEmail?: string;
     }
 

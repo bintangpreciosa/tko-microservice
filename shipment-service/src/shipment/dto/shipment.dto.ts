@@ -10,57 +10,70 @@
       order_id: number;
 
       @Field(() => String, { nullable: true })
-      // @Directive('@external')
+      @Directive('@shareable')
       payment_status?: string;
 
       @Field(() => String, { nullable: true })
-      // @Directive('@external')
+      @Directive('@shareable')
       shipping_status?: string;
     }
 
     @ObjectType()
-    @Directive('@key(fields: "shipment_id")') // <-- TAMBAHKAN DIRECTIVE INI
+    @Directive('@key(fields: "shipment_id")') 
     export class ShipmentDTO {
       @Field(() => ID)
       shipment_id: number;
 
       @Field(() => ID)
-      order_id: number; // Tetap ada order_id untuk referensi internal
+      @Directive('@shareable')
+      order_id: number; 
 
-      @Field(() => OrderRefDTO, { nullable: true }) // Gunakan OrderRefDTO di sini untuk relasi ke Order Subgraph
-      order?: OrderRefDTO; // Nama field di DTO akan jadi 'order'
+      @Field(() => OrderRefDTO, { nullable: true }) 
+      @Directive('@shareable')
+      order?: OrderRefDTO; 
 
       @Field(() => String, { nullable: true })
-      shipment_date?: string | null; // ISO string
+      @Directive('@shareable')
+      shipment_date?: string | null; 
 
       @Field(() => String, { nullable: true })
-      delivery_date?: string | null; // ISO string
+      @Directive('@shareable')
+      delivery_date?: string | null; 
 
       @Field(() => String)
+      @Directive('@shareable')
       status: string;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       courier_name?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       tracking_number?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_street?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_city?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_postal_code?: string | null;
 
       @Field(() => String, { nullable: true })
+      @Directive('@shareable')
       shipping_address_country?: string | null;
 
       @Field(() => String)
+      @Directive('@shareable')
       created_at: string;
 
       @Field(() => String)
+      @Directive('@shareable')
       updated_at: string;
     }
 
