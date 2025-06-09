@@ -8,35 +8,35 @@
       product_id: number;
       
       @Field()
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       name: string;
 
       @Field({ nullable: true })
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       description?: string;
 
       @Field(() => Float)
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       price: number;
 
       @Field(() => Int)
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       stock: number;
 
       @Field({ nullable: true })
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       image_url?: string;
 
       @Field()
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       status: string;
 
       @Field(() => String)
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       created_at: string;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable') // <-- PASTIKAN @shareable ada di sini
+      // @Directive('@shareable') 
       updated_at?: string;
 
     }

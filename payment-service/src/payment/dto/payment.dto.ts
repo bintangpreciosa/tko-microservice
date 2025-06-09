@@ -22,27 +22,27 @@ export class PaymentDTO {
   payment_id: number;
 
   @Field(() => ID)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   order_id: number;
 
   @Field(() => OrderRefDTO, { nullable: true })
-  @Directive('@shareable') 
+  // @Directive('@shareable') 
   order?: OrderRefDTO;
 
   @Field(() => Float)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   amount: number;
 
   @Field()
-  @Directive('@shareable')
+  // @Directive('@shareable')
   payment_method: string;
 
   @Field()
-  @Directive('@shareable')
+  // @Directive('@shareable')
   payment_status: string;
 
   @Field()
-  @Directive('@shareable')
+  // @Directive('@shareable')
   payment_date: string; 
 }
 

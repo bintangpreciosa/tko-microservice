@@ -13,7 +13,7 @@ import { DateTimeScalar } from './common/scalars/datetime.scalar';
       driver: ApolloFederationDriver,
       autoSchemaFile: {
         federation: 2, 
-        path: join(process.cwd(), 'src/schema.gql'), 
+        path: join(process.cwd(), 'src/federated-schema.gql'), 
       },
       sortSchema: true,
       playground: true, 

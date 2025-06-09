@@ -25,55 +25,55 @@
       shipment_id: number;
 
       @Field(() => ID)
-      @Directive('@shareable')
+      // @Directive('@shareable')
       order_id: number; 
 
       @Field(() => OrderRefDTO, { nullable: true }) 
-      @Directive('@shareable')
+      // @Directive('@shareable')
       order?: OrderRefDTO; 
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       shipment_date?: string | null; 
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       delivery_date?: string | null; 
 
       @Field(() => String)
-      @Directive('@shareable')
+      // @Directive('@shareable')
       status: string;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       courier_name?: string | null;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       tracking_number?: string | null;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       shipping_address_street?: string | null;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       shipping_address_city?: string | null;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       shipping_address_postal_code?: string | null;
 
       @Field(() => String, { nullable: true })
-      @Directive('@shareable')
+      // @Directive('@shareable')
       shipping_address_country?: string | null;
 
       @Field(() => String)
-      @Directive('@shareable')
+      // @Directive('@shareable')
       created_at: string;
 
       @Field(() => String)
-      @Directive('@shareable')
+      // @Directive('@shareable')
       updated_at: string;
     }
 

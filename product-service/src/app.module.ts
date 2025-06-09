@@ -17,7 +17,7 @@
           driver: ApolloFederationDriver, // Menggunakan driver federasi
           autoSchemaFile: {
             federation: 2, // Mengaktifkan Federation v2
-            path: join(process.cwd(), 'src/schema.gql'), // Path untuk skema yang dihasilkan
+            path: join(process.cwd(), 'src/federated-schema.gql'), // Path untuk skema yang dihasilkan
           },
           sortSchema: true,
           playground: true, // Biarkan playground aktif untuk debugging subgraph

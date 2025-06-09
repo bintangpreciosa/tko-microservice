@@ -14,8 +14,8 @@ type CartDTO {
   cart_items: [CartItemDTO!]!
   created_at: String!
   customer: CustomerReference
+  customerContactInfo: String
   customer_crm_id: String
-  product: ProductReference!
   session_id: String
   total_price: Float!
   updated_at: String!
@@ -26,6 +26,7 @@ type CartItemDTO {
   cart_item_id: ID!
   price: Float!
   product: ProductReference!
+  productDetailSummary: String
   product_id: Int!
   product_name: String!
   quantity: Int!
@@ -36,9 +37,6 @@ type CustomerReference {
   id: ID!
   name: String
 }
-
-"""DateTime custom scalar type from ISO 8601 string"""
-scalar DateTime
 
 input GetCartInput {
   cart_id: ID

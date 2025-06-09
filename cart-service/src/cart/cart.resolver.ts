@@ -1,7 +1,7 @@
-// src/cart/cart.resolver.ts
 import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, ResolveReference } from '@nestjs/graphql';
 import { CartService } from './cart.service';
-import { CartDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCartInput, GetCartInput, ProductReference, CustomerReference, CartItemDTO } from './dto/cart.dto';
+// Import CartItemDTO, ProductReference, CustomerReference hanya jika masih diperlukan di CartResolver
+import { CartDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCartInput, GetCartInput, CustomerReference } from './dto/cart.dto'; 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 @Resolver(() => CartDTO)
@@ -55,25 +55,26 @@ export class CartResolver {
 
   // @ResolveReference untuk CartDTO (agar Gateway tahu cara mengambil Cart)
   @ResolveReference()
-      async resolveReference(reference: { __typename: string; cart_id: string }): Promise<CartDTO> {
-        const cart = await this.cartService.getCart({ cart_id: parseInt(reference.cart_id, 10) });
-        if (!cart) {
-          // Throw NotFoundException jika cart tidak ditemukan
-          throw new NotFoundException(`Cart with ID ${reference.cart_id} not found.`);
-        }
-        return cart;
-      }
-
+  async resolveReference(reference: { __typename: string; cart_id: string }): Promise<CartDTO> {
+    const cart = await this.cartService.getCart({ cart_id: parseInt(reference.cart_id, 10) });
+    if (!cart) {
+      throw new NotFoundException(`Cart with ID ${reference.cart_id} not found.`);
+    }
+    return cart;
+  }
 
   // Field Resolver untuk Customer di dalam CartDTO
   @ResolveField('customer', () => CustomerReference, { nullable: true })
-      async getCustomer(@Parent() cart: CartDTO): Promise<CustomerReference | null> {
-        if (!cart.customer_crm_id) return null;
-        return { id: cart.customer_crm_id };
-      }
+  async getCustomer(@Parent() cart: CartDTO): Promise<CustomerReference | null> {
+    if (!cart.customer_crm_id) return null;
+    return { id: cart.customer_crm_id };
+  }
 
-      @ResolveField('product', () => ProductReference)
-      async getProduct(@Parent() cartItem: CartItemDTO): Promise<ProductReference> {
-        return { product_id: cartItem.product_id };
-}
+  @ResolveField(() => String, { nullable: true })
+  customerContactInfo(@Parent() cart: CartDTO): string | null {
+    if (!cart.customer) return null;
+    const { name, email } = cart.customer;
+    // Perbaiki string literal yang salah ketik (spasi di dalam ${name || 'N/A'})
+    return `<span class="math-inline">\{name \|\| 'N/A'\} <</span>{email || 'N/A'}>`; 
+  }
 }

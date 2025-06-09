@@ -9,17 +9,16 @@ export class ProductReference {
   @Directive('@external') 
   product_id: number;
 
-
   @Field(() => String, { nullable: true })
-  @Directive('@shareable')
+  @Directive('@external')
   name?: string;
 
   @Field(() => Float, { nullable: true })
-  @Directive('@shareable')
+  @Directive('@external')
   price?: number;
 
   @Field(() => Int, { nullable: true })
-  @Directive('@shareable')
+  @Directive('@external')
   stock?: number;
 }
 
@@ -32,11 +31,11 @@ export class CustomerReference {
   id: string;
 
   @Field(() => String, { nullable: true })
-  @Directive('@shareable')
+  @Directive('@external')
   name?: string;
 
   @Field(() => String, { nullable: true })
-  @Directive('@shareable')
+  @Directive('@external')
   email?: string;
 }
 
@@ -48,27 +47,32 @@ export class CartItemDTO {
   cart_item_id: number;
 
   @Field(() => Int)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   cart_id: number;
 
   @Field(() => Int)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   product_id: number;
 
   @Field(() => ProductReference)
   product: ProductReference;
 
   @Field()
-  @Directive('@shareable')
+  // @Directive('@shareable')
   product_name: string;
 
   @Field(() => Int)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   quantity: number;
 
   @Field(() => Float)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   price: number;
+
+  @Field(() => String, { nullable: true })
+  @Directive('@requires(fields: "product { name price stock }")') // Membutuhkan name, price, stock
+  productDetailSummary?: string; // Contoh nama field
+
 }
 
 @ObjectType()
@@ -78,30 +82,35 @@ export class CartDTO {
   cart_id: number;
 
   @Field(() => String, { nullable: true })
-  @Directive('@shareable')
+  // @Directive('@shareable')
   customer_crm_id?: string | null;
 
   @Field(() => CustomerReference, { nullable: true })
   customer?: CustomerReference | null;
 
   @Field(() => String, { nullable: true })
-  @Directive('@shareable')
+  // @Directive('@shareable')
   session_id?: string | null;
 
   @Field(() => String)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   created_at: string;
 
   @Field(() => String)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   updated_at: string;
 
   @Field(() => [CartItemDTO])
   cart_items: CartItemDTO[];
 
   @Field(() => Float)
-  @Directive('@shareable')
+  // @Directive('@shareable')
   total_price: number;
+
+  @Field(() => String, { nullable: true })
+  @Directive('@requires(fields: "customer { name email }")') // Membutuhkan name, email
+  customerContactInfo?: string; // Contoh nama field
+
 }
 
 @InputType()

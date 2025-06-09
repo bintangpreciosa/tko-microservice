@@ -18,14 +18,14 @@
           driver: ApolloFederationDriver,
           autoSchemaFile: {
             federation: 2,
-            path: join(process.cwd(), 'src/schema.gql'),
+            path: join(process.cwd(), 'src/federated-schema.gql'),
           },
           sortSchema: true,
           playground: true, 
         }),
         // Konfigurasi TypeORM untuk database Cart Service
         TypeOrmModule.forRoot({
-          name: 'cartConnection',
+          name: 'default',
           type: 'mysql',
           host: 'localhost',
           port: 3306,
@@ -39,7 +39,7 @@
         CartModule, 
       ],
       controllers: [], 
-      providers: [DateTimeScalar], 
+      providers: [], 
     })
     export class AppModule {}
     
