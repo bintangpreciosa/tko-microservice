@@ -1,0 +1,250 @@
+# docker-compose.yml
+version: '3.8' # Bisa dihapus nanti setelah semua berjalan
+
+services:
+  # --- DATABASE SERVICES (MODIFIKASI INI) ---
+  mysql_products:
+    image: mysql:8.0
+    container_name: mysql_products_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: product_service
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_products_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s # Beri waktu lebih lama untuk respons
+      retries: 10 # Coba lagi 10 kali
+      interval: 5s # Cek setiap 5 detik
+      start_period: 30s # Beri waktu awal 30 detik untuk inisialisasi DB
+
+  mysql_orders:
+    image: mysql:8.0
+    container_name: mysql_orders_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: order_service
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_orders_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+      start_period: 30s
+
+  mysql_carts:
+    image: mysql:8.0
+    container_name: mysql_carts_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: cart_service
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql_carts_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+      start_period: 30s
+
+  mysql_payments:
+    image: mysql:8.0
+    container_name: mysql_payments_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: payment_service
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql_payments_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+      start_period: 30s
+
+  mysql_shipments:
+    image: mysql:8.0
+    container_name: mysql_shipments_db
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: shipment_service
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql_shipments_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+      start_period: 30s
+
+  # --- MICROSERVICE APLIKASI (MODIFIKASI INI) ---
+
+  # Product Service
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product_service_app
+    ports:
+      - "4001:4001"
+    environment:
+      DB_HOST: mysql_products
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_DATABASE: product_service
+      PORT: 4001
+    depends_on:
+      mysql_products: # Ganti dari array menjadi objek
+        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+  # Customer Adapter Service (tidak terhubung ke DB Anda, jadi depends_on tidak perlu healthcheck)
+  customer-adapter-service:
+    build:
+      context: ./customer-adapter-service
+      dockerfile: Dockerfile
+    container_name: customer_adapter_service_app
+    ports:
+      - "4006:4006"
+    environment:
+      PORT: 4006
+    # depends_on: # Tidak perlu depends_on ke DB Anda
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+  # Order Service
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order_service_app
+    ports:
+      - "4002:4002"
+    environment:
+      DB_HOST: mysql_orders
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_DATABASE: order_service
+      PORT: 4002
+      PRODUCT_SERVICE_URL: http://product-service:4001/graphql
+      CUSTOMER_SERVICE_URL: http://customer-adapter-service:4006/graphql
+    depends_on:
+      mysql_orders:
+        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+      product-service:
+        condition: service_started # product-service hanya perlu mulai, tidak perlu healthcheck DB
+      customer-adapter-service:
+        condition: service_started # customer-adapter-service hanya perlu mulai
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+  # Cart Service
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart_service_app
+    ports:
+      - "4005:4005"
+    environment:
+      DB_HOST: mysql_carts
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_DATABASE: cart_service
+      PORT: 4005
+      PRODUCT_SERVICE_URL: http://product-service:4001/graphql
+      CUSTOMER_SERVICE_URL: http://customer-adapter-service:4006/graphql
+    depends_on:
+      mysql_carts:
+        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+      product-service:
+        condition: service_started
+      customer-adapter-service:
+        condition: service_started
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment_service_app
+    ports:
+      - "4003:4003"
+    environment:
+      DB_HOST: mysql_payments
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_DATABASE: payment_service
+      PORT: 4003
+    depends_on:
+      mysql_payments:
+        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+  # Shipment Service
+  shipment-service:
+    build:
+      context: ./shipment-service
+      dockerfile: Dockerfile
+    container_name: shipment_service_app
+    ports:
+      - "4004:4004"
+    environment:
+      DB_HOST: mysql_shipments
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_DATABASE: shipment_service
+      PORT: 4004
+    depends_on:
+      mysql_shipments:
+        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+    networks:
+      - app_network
+
+# Mendefinisikan volume untuk penyimpanan data persisten database
+volumes:
+  mysql_products_data:
+  mysql_orders_data:
+  mysql_carts_data:
+  mysql_payments_data:
+  mysql_shipments_data:
+
+# Mendefinisikan jaringan kustom untuk service-service
+networks:
+  app_network:
+    driver: bridge

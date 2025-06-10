@@ -7,17 +7,17 @@ export class Payment {
   payment_id: number;
 
   @Column()
-  order_id: number; // Foreign key ke tabel orders
+  order_id: number; 
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   amount: number;
 
   @Column({ length: 50 })
-  payment_method: string; // Misalnya: "Credit Card", "Bank Transfer", "PayPal"
+  payment_method: string; 
 
   @Column({ length: 20 })
-  payment_status: string; // Misalnya: "PENDING", "SUCCESS", "FAILED"
+  payment_status: string; 
 
-  @CreateDateColumn() // Menggunakan CreateDateColumn untuk payment_date
+  @CreateDateColumn() 
   payment_date: Date;
 }

@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config'; 
 import { OrderModule } from './order/order.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar'; 
 import { Order } from './order/entity/order.entity'; 
@@ -11,6 +12,10 @@ import { OrderItem } from './order/entity/order-item.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, 
+    }),
+    // Konfigurasi GraphQL Module sebagai subgraph federasi
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
@@ -22,16 +27,16 @@ import { OrderItem } from './order/entity/order-item.entity';
     }),
     // Konfigurasi TypeORM untuk database Order Service
     TypeOrmModule.forRoot({
-      name: 'orderConnection', 
       type: 'mysql',
-      host: 'localhost', 
-      port: 3306,
-      username: 'root',
-      password: '',
-      database: 'order_service', 
-      entities: [join(__dirname, '**', '*.entity.{ts,js}')], 
-      synchronize: false, 
-      logging: false,
+      host: process.env.DB_HOST || 'localhost', 
+      port: parseInt(process.env.DB_PORT || '3306', 10), 
+      username: process.env.DB_USERNAME || 'root',
+      password: process.env.DB_PASSWORD || '', 
+      database: process.env.DB_DATABASE || 'order_service', 
+      // Daftarkan entitas secara eksplisit untuk kejelasan
+      entities: [Order, OrderItem], 
+      synchronize: true, 
+      logging: true, 
     }),
     OrderModule, 
   ],

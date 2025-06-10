@@ -5,7 +5,7 @@ import { Cart } from './entity/cart.entity';
 import { CartItem } from './entity/cart-item.entity';
 import { CartService } from './cart.service';
 import { CartResolver } from './cart.resolver';
-import { CartItemResolver } from './cart-item.resolver'; // <-- Tambahkan ini
+import { CartItemResolver } from './cart-item.resolver';
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { CartItemResolver } from './cart-item.resolver'; // <-- Tambahkan ini
   providers: [
     CartService, 
     CartResolver,
-    CartItemResolver // <-- Tambahkan ini
+    CartItemResolver
   ],
 })
 export class CartModule {}

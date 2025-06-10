@@ -3,13 +3,13 @@ import { Injectable, NotFoundException, BadRequestException, InternalServerError
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './entity/payment.entity';
-import { CreatePaymentInput, UpdatePaymentInput, PaymentDTO, OrderRefDTO } from './dto/payment.dto'; // PASTIKAN OrderRefDTO diimpor
-import axios from 'axios'; // Import axios untuk komunikasi antar-service
+import { CreatePaymentInput, UpdatePaymentInput, PaymentDTO, OrderRefDTO } from './dto/payment.dto'; 
+import axios from 'axios'; 
 
 @Injectable()
 export class PaymentService {
   // Endpoint microservice lain (sesuaikan port jika berbeda)
-  private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql'; // Order Service
+  private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql';
 
   constructor(
     @InjectRepository(Payment, 'paymentConnection')

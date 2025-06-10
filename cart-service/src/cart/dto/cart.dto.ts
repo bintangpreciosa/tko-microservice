@@ -70,8 +70,8 @@ export class CartItemDTO {
   price: number;
 
   @Field(() => String, { nullable: true })
-  @Directive('@requires(fields: "product { name price stock }")') // Membutuhkan name, price, stock
-  productDetailSummary?: string; // Contoh nama field
+  @Directive('@requires(fields: "product { name price stock }")') 
+  productDetailSummary?: string; 
 
 }
 
@@ -108,8 +108,8 @@ export class CartDTO {
   total_price: number;
 
   @Field(() => String, { nullable: true })
-  @Directive('@requires(fields: "customer { name email }")') // Membutuhkan name, email
-  customerContactInfo?: string; // Contoh nama field
+  @Directive('@requires(fields: "customer { name email }")') 
+  customerContactInfo?: string; 
 
 }
 

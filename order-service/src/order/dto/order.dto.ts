@@ -55,7 +55,7 @@ export class OrderItemDTO {
   product: ProductReference; 
 
   @Field()
-  product_name: string; // Tetap dipertahankan seperti kode Anda sebelumnya
+  product_name: string; 
 
   @Field(() => Int)
   quantity: number; 
@@ -64,11 +64,11 @@ export class OrderItemDTO {
   price: number; 
 
   @Field(() => String, { nullable: true })
-  @Directive('@requires(fields: "product { name price stock }")') // Diperbarui untuk menyertakan stock
+  @Directive('@requires(fields: "product { name price stock }")') 
   productDisplayInfo?: string; 
  
   @Field(() => String, { nullable: true })
-  @Directive('@requires(fields: "product { stock }")') // Field baru yang membutuhkan stock
+  @Directive('@requires(fields: "product { stock }")') 
   stockStatusMessage?: string;
 }
 

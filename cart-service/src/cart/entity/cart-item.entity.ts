@@ -13,13 +13,13 @@ export class CartItem {
   @Column()
   product_id: number; 
 
-  @Column({ type: 'varchar', length: 255 }) // Pastikan tipe kolom
+  @Column({ type: 'varchar', length: 255 })
   product_name: string; 
 
-  @Column() // Pastikan tipe kolom
+  @Column()
   quantity: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 }) // Pastikan tipe kolom
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   price: number; 
 
   // Relasi Many-to-One dengan Cart (Pastikan properti ini ada dan benar)

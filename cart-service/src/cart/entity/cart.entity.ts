@@ -13,7 +13,7 @@ export class Cart {
   @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
   session_id: string | null;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 }) // total_price DECIMAL(12,2) DEFAULT 0
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 }) 
   total_price: number;
 
   @CreateDateColumn()
@@ -22,8 +22,6 @@ export class Cart {
   @UpdateDateColumn()
   updated_at: Date;
 
-  // Relasi One-to-Many dengan CartItem
-  // Pastikan properti 'cart' di CartItem merujuk kembali ke sini.
   @OneToMany(() => CartItem, cartItem => cartItem.cart, { cascade: true })
   cart_items: CartItem[];
 }

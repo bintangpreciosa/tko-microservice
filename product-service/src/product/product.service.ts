@@ -1,33 +1,27 @@
 // src/product/product.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm'; // Import InjectRepository dari @nestjs/typeorm
-import { Repository, Like } from 'typeorm'; // Import Repository dan Like dari typeorm
-import { Product } from './entity/product.entity'; // Import entitas Product
-import { CreateProductInput, UpdateProductInput, ProductFilters } from './dto/product.dto'; // Import DTOs
+import { InjectRepository } from '@nestjs/typeorm'; 
+import { Repository, Like } from 'typeorm'; 
+import { Product } from './entity/product.entity'; 
+import { CreateProductInput, UpdateProductInput, ProductFilters } from './dto/product.dto'; 
 
 @Injectable()
 export class ProductService {
   constructor(
-    // Inject Repository untuk entitas Product
-    // Pastikan TypeOrmModule.forFeature([Product], 'productConnection') sudah dikonfigurasi di ProductModule
     @InjectRepository(Product, 'productConnection')
     private productRepository: Repository<Product>,
   ) {}
 
   /**
-   * Mengambil semua produk dengan filter opsional.
-   * @param filters Objek filter untuk menyaring produk (search, minPrice, maxPrice, dll.).
-   * @returns Promise yang resolve ke array Product.
+   * @param filters
+   * @returns 
    */
   async findAll(filters?: ProductFilters): Promise<Product[]> {
-    const where: any = {}; // Objek untuk kondisi WHERE
+    const where: any = {}; 
 
     if (filters) {
       if (filters.search) {
-        // Menggunakan operator Like untuk pencarian string (misalnya, nama produk mengandung 'search' value)
         where.name = Like(`%${filters.search}%`);
-        // Anda bisa menambahkan OR conditions untuk field lain seperti description jika diperlukan
-        // Contoh: where.description = Like(`%${filters.search}%`);
       }
       if (filters.minPrice) {
         // Menambahkan kondisi harga minimum (price >= minPrice)
@@ -51,12 +45,10 @@ export class ProductService {
       }
     }
 
-    // Mengambil produk dari repository dengan kondisi WHERE yang ditentukan
     return this.productRepository.find({ where });
   }
 
   /**
-   * Mengambil satu produk berdasarkan ID-nya.
    * @param product_id ID dari produk yang akan diambil.
    * @returns Promise yang resolve ke objek Product.
    * @throws NotFoundException jika produk tidak ditemukan.

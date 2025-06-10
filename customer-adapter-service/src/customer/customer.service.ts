@@ -170,7 +170,6 @@ export class CustomerService {
           postal_code
           country
           created_at
-          # updated_at DIHAPUS dari query GraphQL
         }
       }
     `;

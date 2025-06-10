@@ -2,7 +2,7 @@
     import { Resolver, Query, Mutation, Args, ID, ObjectType, Field, Int, ResolveReference } from '@nestjs/graphql';
     import { CustomerService } from './customer.service';
     import { CustomerDTO, CreateCustomerInput, UpdateCustomerInput, CustomerFilters } from './dto/customer.dto';
-    import { NotFoundException } from '@nestjs/common'; // <-- TAMBAHKAN IMPORT INI
+    import { NotFoundException } from '@nestjs/common';
 
     @ObjectType()
     export class CustomerConnection {

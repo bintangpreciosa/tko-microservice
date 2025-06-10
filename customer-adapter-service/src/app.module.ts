@@ -3,11 +3,16 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config'; 
+
 import { CustomerModule } from './customer/customer.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar'; 
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, 
+    }),
     // Konfigurasi GraphQL Module sebagai subgraph federasi
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,

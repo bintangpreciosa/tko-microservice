@@ -1,7 +1,6 @@
 // src/order/order.resolver.ts
 import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, Int, ResolveReference } from '@nestjs/graphql';
 import { OrderService } from './order.service';
-// Hapus OrderItemDTO dan ProductReference dari import jika tidak ada lagi ResolveField yang menggunakannya di sini
 import { OrderDTO, CreateOrderInput, UpdateOrderInput, OrderFilters, CustomerReference } from './dto/order.dto'; 
 import { NotFoundException } from '@nestjs/common';
 
@@ -69,9 +68,6 @@ export class OrderResolver {
   // Field Resolver untuk customerFullNameAndEmail yang membutuhkan name dan email dari CustomerReference
   @ResolveField(() => String, { nullable: true })
   customerFullNameAndEmail(@Parent() order: OrderDTO): string | null {
-    // Karena `@requires(fields: "customer { name email }")`,
-    // Apollo Gateway akan memastikan `order.customer` sudah terisi dengan `name` dan `email`
-    // sebelum resolver ini dijalankan.
     if (!order.customer) {
       return null;
     }

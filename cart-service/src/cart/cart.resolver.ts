@@ -1,6 +1,5 @@
 import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, ResolveReference } from '@nestjs/graphql';
 import { CartService } from './cart.service';
-// Import CartItemDTO, ProductReference, CustomerReference hanya jika masih diperlukan di CartResolver
 import { CartDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCartInput, GetCartInput, CustomerReference } from './dto/cart.dto'; 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 

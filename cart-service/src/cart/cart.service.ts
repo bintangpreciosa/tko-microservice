@@ -16,9 +16,9 @@ export class CartService {
   private readonly CUSTOMER_SERVICE_URL = 'http://localhost:4006/graphql'; 
 
   constructor(
-    @InjectRepository(Cart) // Sudah benar tanpa nama koneksi
+    @InjectRepository(Cart)
     private cartRepository: Repository<Cart>,
-    @InjectRepository(CartItem) // Sudah benar tanpa nama koneksi
+    @InjectRepository(CartItem)
     private cartItemRepository: Repository<CartItem>,
     private dataSource: DataSource,
   ) {}
@@ -84,7 +84,6 @@ export class CartService {
 
   // Method untuk menambahkan item ke keranjang
   async addToCart(input: AddToCartInput): Promise<CartDTO> {
-    // Validasi Customer dari Customer Adapter Service (via HTTP/GraphQL)
     let customer: any = null;
     if (input.customer_crm_id) {
         const customerQuery = `
@@ -248,23 +247,21 @@ export class CartService {
   // Hapus item dari database
   await this.cartItemRepository.remove(cartItemToRemove); 
   
-  // MUAT ULANG KERANJANG UTAMA DARI DATABASE UNTUK MENDAPATKAN LIST ITEM YANG TERBARU
   const updatedCart = await this.cartRepository.findOne({ 
       where: { cart_id: cartId }, 
       relations: ['cart_items'] 
   });
 
   if (!updatedCart) {
-      // Ini seharusnya tidak terjadi jika item sudah ditemukan dan memiliki cart_id
       throw new NotFoundException(`Cart not found after removing item ID ${input.cart_item_id}.`);
   }
 
   // Perbarui updated_at dan total_price
   updatedCart.updated_at = new Date();
-  updatedCart.total_price = this.calculateCartTotal(updatedCart.cart_items || []); // Hitung ulang total
+  updatedCart.total_price = this.calculateCartTotal(updatedCart.cart_items || []); 
   await this.cartRepository.save(updatedCart);
 
-  return this.mapCartToDTO(updatedCart)!; // Kembalikan DTO dari objek keranjang yang sudah diperbarui dari DB
+  return this.mapCartToDTO(updatedCart)!; 
 }
 
   // Method untuk mengosongkan seluruh keranjang

@@ -54,12 +54,6 @@
       // Field Resolver untuk Order di dalam ShipmentDTO
       @ResolveField('order', () => OrderRefDTO, { nullable: true })
       async getOrder(@Parent() shipment: ShipmentDTO): Promise<OrderRefDTO | null> {
-        // Kita perlu mendapatkan order dari Order Service untuk mengambil payment_status dan shipping_status
-        // Karena OrderRefDTO membutuhkan payment_status dan shipping_status, kita harus mengambilnya
-        // dari Order Service di sini.
-
-        // Ambil detail Order dari Order Service menggunakan AXIOS
-        // Ini adalah panggilan HTTP/GraphQL ke Order Service
         const orderQuery = `
             query GetOrderForShipment($orderId: ID!) {
                 order(order_id: $orderId) {

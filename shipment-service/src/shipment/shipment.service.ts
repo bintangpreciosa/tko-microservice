@@ -3,19 +3,16 @@
     import { InjectRepository } from '@nestjs/typeorm';
     import { Repository, Like } from 'typeorm';
     import { Shipment } from './entity/shipment.entity';
-    import { CreateShipmentInput, UpdateShipmentInput, ShipmentDTO, ShipmentFilters, OrderRefDTO } from './dto/shipment.dto'; // Import OrderRefDTO
-    import axios from 'axios'; // Import axios untuk komunikasi antar-service
+    import { CreateShipmentInput, UpdateShipmentInput, ShipmentDTO, ShipmentFilters, OrderRefDTO } from './dto/shipment.dto'; 
+    import axios from 'axios'; 
 
     @Injectable()
     export class ShipmentService {
-      // Endpoint microservice lain (sesuaikan port jika berbeda)
-      private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql'; // Order Service
+      private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql'; 
 
       constructor(
         @InjectRepository(Shipment, 'shipmentConnection')
         private shipmentRepository: Repository<Shipment>,
-        // HAPUS INJEKSI OrderService
-        // private orderService: OrderService,
       ) {}
 
       // Helper untuk mengubah Shipment Entity menjadi ShipmentDTO
@@ -25,8 +22,7 @@
         const shipmentDTO = new ShipmentDTO();
         shipmentDTO.shipment_id = shipment.shipment_id;
         shipmentDTO.order_id = shipment.order_id;
-        // Map order reference (hanya ID, detail akan di-resolve oleh Gateway)
-        shipmentDTO.order = { order_id: shipment.order_id }; // Gunakan OrderRefDTO di sini
+        shipmentDTO.order = { order_id: shipment.order_id }; 
         shipmentDTO.shipment_date = shipment.shipment_date?.toISOString() ?? null;
         shipmentDTO.delivery_date = shipment.delivery_date?.toISOString() ?? null;
         shipmentDTO.status = shipment.status;

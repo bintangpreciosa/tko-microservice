@@ -1,20 +1,19 @@
 // src/shipment/entity/shipment.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-// TIDAK PERLU IMPORT Order di sini karena tidak ada relasi langsung TypeORM antar-database
 
-@Entity('Shipment') // Nama tabel di database adalah 'Shipment'
+@Entity('Shipment') 
 export class Shipment {
   @PrimaryGeneratedColumn()
   shipment_id: number;
 
   @Column()
-  order_id: number; // Ini akan tetap sebagai Foreign Key manual (kolom biasa)
+  order_id: number; 
 
   @Column({ type: 'timestamp', nullable: true })
-  shipment_date: Date | null; // Tanggal pengiriman
+  shipment_date: Date | null; 
 
   @Column({ type: 'timestamp', nullable: true })
-  delivery_date: Date | null; // Tanggal estimasi/aktual pengiriman
+  delivery_date: Date | null; 
 
   @Column({ type: 'varchar', length: 50 })
   status: string;

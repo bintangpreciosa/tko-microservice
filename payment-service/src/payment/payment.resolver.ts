@@ -1,7 +1,7 @@
 // src/payment/payment.resolver.ts
 import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, ResolveReference } from '@nestjs/graphql';
 import { PaymentService } from './payment.service';
-import { PaymentDTO, CreatePaymentInput, UpdatePaymentInput, OrderRefDTO } from './dto/payment.dto'; // PASTIKAN OrderRefDTO diimpor
+import { PaymentDTO, CreatePaymentInput, UpdatePaymentInput, OrderRefDTO } from './dto/payment.dto'; 
 import { NotFoundException } from '@nestjs/common';
 
 @Resolver(() => PaymentDTO)
