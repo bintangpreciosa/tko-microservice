@@ -4,17 +4,20 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config'; 
+import { ConfigModule, ConfigService } from '@nestjs/config'; 
 import { ProductModule } from './product/product.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar';
-import { Product } from './product/entity/product.entity'; 
+// import { Product } from './product/entity/product.entity';
+// // === TAMBAHKAN INI === //
+// import * as dotenv from 'dotenv';
+// dotenv.config();
+// // ===================== //
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, 
     }),
-    // Konfigurasi GraphQL Module sebagai subgraph federasi
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       autoSchemaFile: {
@@ -24,18 +27,28 @@ import { Product } from './product/entity/product.entity';
       sortSchema: true,
       playground: true,
     }),
-    // Konfigurasi TypeORM untuk database Product Service
+    // ==================== UBAH INI ==================== //
     TypeOrmModule.forRoot({
+      name: 'productConnection',
       type: 'mysql',
-      host: process.env.DB_HOST, 
-      port: parseInt(process.env.DB_PORT || '3306', 10), 
-      username: process.env.DB_USERNAME, 
-      password: process.env.DB_PASSWORD || '', 
-      database: process.env.DB_DATABASE, 
-      entities: [Product], 
-      synchronize: true, 
-      logging: true, 
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT!, 10),
+      username: process.env.DB_USERNAME!, 
+      password: process.env.DB_PASSWORD!,
+      database: process.env.DB_DATABASE!,
+      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+      synchronize: false, 
+      logging: false,
+      autoLoadEntities: true,
+      retryAttempts: 10, // Jumlah percobaan ulang koneksi
+      retryDelay: 3000,  // Penundaan 3 detik antar percobaan
+      extra: {
+        connectionLimit: 10,
+        charset: 'utf8mb4_bin', // Standardisasi charset
+        // acquireTimeout: 30000, // Timeout untuk mendapatkan koneksi dari pool (30 detik)
+      },
     }),
+    // ================================================== //
     ProductModule,
   ],
   controllers: [],

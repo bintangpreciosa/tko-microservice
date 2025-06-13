@@ -5,13 +5,13 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 
-RUN npm install --legacy-peer-deps --force
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 

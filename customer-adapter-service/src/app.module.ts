@@ -7,6 +7,11 @@ import { ConfigModule } from '@nestjs/config';
 
 import { CustomerModule } from './customer/customer.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar'; 
+// import { HealthModule } from './health/health.module'; // UNCOMMENT INI
+// === TAMBAHKAN INI === //
+// import * as dotenv from 'dotenv';
+// dotenv.config();
+// ===================== //
 
 @Module({
   imports: [
@@ -25,6 +30,7 @@ import { DateTimeScalar } from './common/scalars/datetime.scalar';
     }),
     
     CustomerModule, 
+    // HealthModule,
   ],
   controllers: [], 
   providers: [DateTimeScalar], 
