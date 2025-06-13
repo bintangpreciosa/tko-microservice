@@ -4,7 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config'; 
+import { ConfigModule, ConfigService } from '@nestjs/config'; 
 import { ProductModule } from './product/product.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar';
 import { Product } from './product/entity/product.entity'; 
@@ -24,17 +24,23 @@ import { Product } from './product/entity/product.entity';
       sortSchema: true,
       playground: true,
     }),
-    // Konfigurasi TypeORM untuk database Product Service
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST, 
-      port: parseInt(process.env.DB_PORT || '3306', 10), 
-      username: process.env.DB_USERNAME, 
-      password: process.env.DB_PASSWORD || '', 
-      database: process.env.DB_DATABASE, 
-      entities: [Product], 
-      synchronize: true, 
-      logging: true, 
+    // Konfigurasi TypeORM untuk database Product Service menggunakan forRootAsync
+    TypeOrmModule.forRootAsync({
+      name: 'productConnection', // Nama koneksi untuk DI
+      imports: [ConfigModule],
+
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD') || '',
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [Product],
+        synchronize: true,
+        logging: true,
+      }),
     }),
     ProductModule,
   ],

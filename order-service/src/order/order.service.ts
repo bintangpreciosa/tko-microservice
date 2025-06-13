@@ -1,25 +1,38 @@
 // src/order/order.service.ts
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException} from '@nestjs/common';
+import { 
+  Inject, 
+  Injectable, 
+  NotFoundException, 
+  BadRequestException, 
+  InternalServerErrorException 
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entity/order.entity';
 import { OrderItem } from './entity/order-item.entity';
 import axios from 'axios';
-
 import { OrderDTO, OrderItemDTO, CreateOrderInput, UpdateOrderInput, OrderFilters, CreateOrderItemInput, ProductReference, CustomerReference } from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   // Endpoint microservice lain
-  private readonly PRODUCT_SERVICE_URL = 'http://localhost:4001/graphql';
-  private readonly CUSTOMER_SERVICE_URL = 'http://localhost:4006/graphql'; // Customer Adapter Service
+  private readonly PRODUCT_SERVICE_URL: string;
+  private readonly CUSTOMER_SERVICE_URL: string;
 
   constructor(
     @InjectRepository(Order, 'orderConnection')
     private orderRepository: Repository<Order>,
     @InjectRepository(OrderItem, 'orderConnection')
     private orderItemRepository: Repository<OrderItem>,
-  ) {}
+    @Inject(ConfigService) private configService: ConfigService
+  ) {
+    this.PRODUCT_SERVICE_URL = this.configService.get<string>('PRODUCT_SERVICE_URL') || 'http://product-service:4001/graphql';
+    this.CUSTOMER_SERVICE_URL = this.configService.get<string>('CUSTOMER_SERVICE_URL') || 'http://customer-adapter-service:4006/graphql';
+    
+    console.log('Product Service URL:', this.PRODUCT_SERVICE_URL);
+    console.log('Customer Service URL:', this.CUSTOMER_SERVICE_URL);
+  }
 
   // Helper untuk menghitung total harga keranjang
   private calculateCartTotal(cartItems: OrderItem[]): number {
@@ -235,8 +248,12 @@ export class OrderService {
     return this.mapOrderToDTO(updatedOrder)!;
   }
 
-  // Method untuk menghapus pesanan (bersama itemnya karena cascade)
+  // Method untuk menghapus pesanan (bersama itemnya)
   async delete(order_id: number): Promise<boolean> {
+    // Hapus order items terlebih dahulu
+    await this.orderItemRepository.delete({ order_id });
+    
+    // Kemudian hapus order
     const result = await this.orderRepository.delete(order_id);
     return (result.affected ?? 0) > 0;
   }

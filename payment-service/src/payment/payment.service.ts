@@ -1,20 +1,62 @@
 // src/payment/payment.service.ts
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { 
+  Injectable, 
+  NotFoundException, 
+  BadRequestException, 
+  InternalServerErrorException,
+  Inject,
+  forwardRef 
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AxiosResponse } from 'axios';
 import { Payment } from './entity/payment.entity';
-import { CreatePaymentInput, UpdatePaymentInput, PaymentDTO, OrderRefDTO } from './dto/payment.dto'; 
-import axios from 'axios'; 
+import { CreatePaymentInput, UpdatePaymentInput, PaymentDTO, OrderRefDTO } from './dto/payment.dto';
+
+// Define response interfaces
+interface GraphQLError {
+  message: string;
+  locations?: Array<{ line: number; column: number }>;
+  path?: string[];
+}
+
+interface GraphQLResponse<T> {
+  data?: T;
+  errors?: GraphQLError[];
+}
+
+interface OrderData {
+  order: {
+    order_id: string;
+    total_price: number;
+    payment_status: string;
+    shipping_status: string;
+  };
+}
+
+interface UpdateStatusData {
+  updateStatus: {
+    order_id: string;
+    payment_status: string;
+  };
+}
 
 @Injectable()
 export class PaymentService {
-  // Endpoint microservice lain (sesuaikan port jika berbeda)
-  private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql';
+  private readonly orderServiceUrl: string;
 
   constructor(
     @InjectRepository(Payment, 'paymentConnection')
     private paymentRepository: Repository<Payment>,
-  ) {}
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.orderServiceUrl = this.configService.get<string>('ORDER_SERVICE_URL', 'http://order-service:4002/graphql');
+  }
 
   // Helper untuk memetakan Payment Entity ke PaymentDTO
   private mapPaymentToDTO(payment: Payment | null): PaymentDTO | null {
@@ -59,21 +101,41 @@ export class PaymentService {
     `;
     let order: any;
     try {
-        const response = await axios.post(this.ORDER_SERVICE_URL, {
-            query: orderQuery,
-            variables: { orderId: input.order_id }
-        });
-        if (response.data.errors) {
-            console.error('Order Service Errors:', response.data.errors);
+        const response = await firstValueFrom(
+            this.httpService.post<GraphQLResponse<OrderData>>(this.orderServiceUrl, {
+                query: orderQuery,
+                variables: { orderId: input.order_id }
+            }).pipe(
+                catchError((error) => {
+                    console.error('Order Service connection error:', error.message);
+                    throw new InternalServerErrorException(
+                        `Failed to connect to Order Service: ${error.message}`,
+                    );
+                }),
+            ),
+        );
+
+        const responseData = response.data;
+
+        if (responseData.errors) {
+            console.error('Order Service Errors:', responseData.errors);
             throw new InternalServerErrorException('Order Service returned errors.');
         }
-        order = response.data.data.order;
+        
+        if (!responseData.data?.order) {
+            throw new BadRequestException(`Order with ID ${input.order_id} not found via Order Service.`);
+        }
+        
+        order = responseData.data.order;
         if (!order) {
             throw new BadRequestException(`Order with ID ${input.order_id} not found via Order Service.`);
         }
     } catch (error) {
-        console.error('Error calling Order Service:', error.message);
-        throw new InternalServerErrorException(`Failed to connect to Order Service: ${error.message}`);
+        if (error instanceof InternalServerErrorException) {
+            throw error;
+        }
+        console.error('Error processing order validation:', error.message);
+        throw new InternalServerErrorException(`Error processing order validation: ${error.message}`);
     }
 
     // Validasi: pastikan pembayaran tidak melebihi total_price order
@@ -104,13 +166,29 @@ export class PaymentService {
         }
     `;
     try {
-        await axios.post(this.ORDER_SERVICE_URL, {
-            query: updateOrderStatusMutation,
-            variables: { orderId: input.order_id, paymentStatus: 'PAID', shippingStatus: order.shipping_status }
-        });
+        await firstValueFrom(
+            this.httpService.post(this.orderServiceUrl, {
+                query: updateOrderStatusMutation,
+                variables: { 
+                    orderId: input.order_id, 
+                    paymentStatus: 'PAID', 
+                    shippingStatus: order.shipping_status 
+                }
+            }).pipe(
+                catchError((error) => {
+                    console.error('Error updating order status:', error.message);
+                    throw new InternalServerErrorException(
+                        `Failed to update order status: ${error.message}`,
+                    );
+                }),
+            ),
+        );
     } catch (error) {
-        console.error('Error updating order status in Order Service:', error.message);
-        throw new InternalServerErrorException(`Failed to update order status: ${error.message}`);
+        if (error instanceof InternalServerErrorException) {
+            throw error;
+        }
+        console.error('Unexpected error during order status update:', error.message);
+        throw new InternalServerErrorException(`Unexpected error during order status update: ${error.message}`);
     }
 
     return this.mapPaymentToDTO(savedPayment)!;
@@ -139,15 +217,32 @@ export class PaymentService {
           `;
           let order: any;
           try {
-              const response = await axios.post(this.ORDER_SERVICE_URL, {
+const response = await firstValueFrom(
+                this.httpService.post<GraphQLResponse<OrderData>>(this.orderServiceUrl, {
                   query: orderQuery,
                   variables: { orderId: payment.order_id }
-              });
-              if (response.data.errors) {
-                  console.error('Order Service Errors during update:', response.data.errors);
+                }).pipe(
+                  catchError((error) => {
+                      console.error('Order Service error during update:', error.message);
+                      throw new InternalServerErrorException(
+                          `Failed to connect to Order Service during update: ${error.message}`,
+                      );
+                  }),
+                ),
+              );
+
+              const responseData = response.data;
+
+              if (responseData.errors) {
+                  console.error('Order Service Errors during update:', responseData.errors);
                   throw new InternalServerErrorException('Order Service returned errors during update.');
               }
-              order = response.data.data.order;
+              
+              if (!responseData.data?.order) {
+                  throw new NotFoundException(`Order with ID ${payment.order_id} not found.`);
+              }
+              
+              order = responseData.data.order;
               if (order) {
                   const updateOrderStatusMutation = `
                       mutation UpdateOrderStatus($orderId: ID!, $paymentStatus: String, $shippingStatus: String) {
@@ -157,10 +252,28 @@ export class PaymentService {
                           }
                       }
                   `;
-                  await axios.post(this.ORDER_SERVICE_URL, {
+                  const updateResponse = await firstValueFrom(
+                    this.httpService.post<GraphQLResponse<UpdateStatusData>>(this.orderServiceUrl, {
                       query: updateOrderStatusMutation,
-                      variables: { orderId: order.order_id, paymentStatus: 'PAID', shippingStatus: order.shipping_status }
-                  });
+                      variables: { 
+                        orderId: order.order_id, 
+                        paymentStatus: 'PAID', 
+                        shippingStatus: order.shipping_status 
+                      }
+                    }).pipe(
+                      catchError((error) => {
+                        console.error('Order Service error during order status update:', error.message);
+                        throw new InternalServerErrorException(
+                          `Failed to update order status in Order Service: ${error.message}`,
+                        );
+                      }),
+                    ),
+                  );
+
+                  if (updateResponse.data?.errors) {
+                    console.error('Failed to update order status:', updateResponse.data.errors);
+                    throw new InternalServerErrorException('Failed to update order status');
+                  }
               }
           } catch (error) {
               console.error('Error calling Order Service for status update:', error.message);

@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@apollo/subgraph": "^2.4.1",
+    "@apollo/server": "^4.10.0",
     "@nestjs/apollo": "^11.0.4",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.4",
@@ -82,3 +83,4 @@
     "testEnvironment": "node"
   }
 }
+

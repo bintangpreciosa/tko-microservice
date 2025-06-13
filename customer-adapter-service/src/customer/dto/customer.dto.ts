@@ -1,4 +1,3 @@
-// src/customer/dto/customer.dto.ts
 import { Field, ID, ObjectType, InputType, Int, Directive } from '@nestjs/graphql';
 
 @ObjectType()
@@ -20,87 +19,39 @@ export class CustomerDTO {
   id: string;
 
   @Field()
-  // @Directive('@shareable')
   name: string;
 
   @Field()
-  // @Directive('@shareable')
   email: string;
 
   @Field({ nullable: true })
-  // @Directive('@shareable')
   phone?: string;
 
   @Field({ nullable: true })
-  // @Directive('@shareable')
   address?: string;
 
   @Field({ nullable: true })
-  // @Directive('@shareable')
   city?: string;
 
   @Field({ nullable: true })
-  // @Directive('@shareable')
-  postal_code?: string;
+  postalCode?: string;
 
   @Field({ nullable: true })
-  // @Directive('@shareable')
   country?: string;
 
-  @Field(() => String) 
-  // @Directive('@shareable')
-  created_at: string;
+  @Field(() => Date) 
+  createdAt: Date;
 
   @Field(() => [CustomerLogin], { nullable: true })
   logins?: CustomerLogin[];
 }
 
-@InputType()
-export class CreateCustomerInput {
-  @Field()
-  name: string;
-
-  @Field()
-  email: string;
-
-  @Field({ nullable: true })
-  phone?: string;
-
-  @Field({ nullable: true })
-  address?: string;
-
-  @Field({ nullable: true })
+export interface CustomerFilters {
+  search?: string;
   city?: string;
-
-  @Field({ nullable: true })
-  postal_code?: string;
-
-  @Field({ nullable: true })
   country?: string;
-}
-
-@InputType()
-export class UpdateCustomerInput {
-  @Field({ nullable: true })
-  name?: string;
-
-  @Field({ nullable: true })
-  email?: string;
-
-  @Field({ nullable: true })
-  phone?: string;
-
-  @Field({ nullable: true })
-  address?: string;
-
-  @Field({ nullable: true })
-  city?: string;
-
-  @Field({ nullable: true })
-  postal_code?: string;
-
-  @Field({ nullable: true })
-  country?: string;
+  limit?: number;
+  offset?: number;
 }
 
 @InputType()

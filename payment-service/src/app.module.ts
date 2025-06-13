@@ -4,7 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PaymentModule } from './payment/payment.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar';
 import { Payment } from './payment/entity/payment.entity';
@@ -25,17 +25,21 @@ import { Payment } from './payment/entity/payment.entity';
       buildSchemaOptions: {
       },
     }),
-    TypeOrmModule.forRoot({
-      name: 'default', 
-      type: 'mysql',
-      host: process.env.DB_HOST || 'localhost', 
-      port: parseInt(process.env.DB_PORT || '3306', 10), 
-      username: process.env.DB_USERNAME || 'root',
-      password: process.env.DB_PASSWORD || '', 
-      database: process.env.DB_DATABASE || 'payment_service', 
-      entities: [Payment], 
-      synchronize: true, 
-      logging: true, 
+    TypeOrmModule.forRootAsync({
+      name: 'paymentConnection', // Nama koneksi untuk DI
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD') || '',
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [Payment],
+        synchronize: true,
+        logging: true,
+      }),
     }),
     PaymentModule,
   ],

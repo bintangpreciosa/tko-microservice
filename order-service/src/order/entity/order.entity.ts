@@ -42,7 +42,10 @@ export class Order {
   @Column({ type: 'timestamp', default: null, onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  @OneToMany(() => OrderItem, orderItem => orderItem.order, { cascade: true })
+  @OneToMany(() => OrderItem, orderItem => orderItem.order, { 
+    cascade: true,
+    onDelete: 'CASCADE' 
+  })
   order_items: OrderItem[];
 
 }

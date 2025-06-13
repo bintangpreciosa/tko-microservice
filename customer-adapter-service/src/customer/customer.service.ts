@@ -1,224 +1,152 @@
-// src/customer/customer.service.ts
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'; // Tambahkan NotFoundException
-import axios from 'axios';
-import { CustomerDTO, CreateCustomerInput, UpdateCustomerInput, CustomerFilters } from './dto/customer.dto';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
+import { AxiosResponse } from 'axios';
+import { CustomerDTO, CustomerFilters } from 'src/customer/dto/customer.dto';
+import { CreateCustomerInput } from 'src/customer/dto/create-customer.input';
+import { UpdateCustomerInput } from 'src/customer/dto/update-customer.input';
 
 @Injectable()
 export class CustomerService {
-  private readonly CRM_GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql';
+  private readonly logger = new Logger(CustomerService.name);
+  private readonly crmApiUrl: string;
+  private readonly authHeaders: Record<string, string>;
 
-  // Header untuk autentikasi (jika diperlukan)
-  private readonly AUTH_HEADERS = {
-    // 'Authorization': 'Bearer YOUR_CRM_API_KEY_OR_TOKEN', // Uncomment & ganti jika CRM butuh auth
-    'Content-Type': 'application/json',
-  };
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.crmApiUrl = this.configService.get<string>('CRM_API_URL') || 'http://localhost:3000';
+    this.authHeaders = {
+      'Content-Type': 'application/json',
+      'x-api-key': this.configService.get<string>('CRM_API_KEY') || '',
+    };
 
-  // Helper untuk memetakan Customer dari respon CRM ke CustomerDTO
-  private mapCrmCustomerToDTO(crmCustomer: any): CustomerDTO | null {
-    if (!crmCustomer) return null;
+    if (!this.crmApiUrl) {
+      throw new Error('CRM_API_URL is not defined in environment variables');
+    }
 
-    const customerDTO = new CustomerDTO();
-    customerDTO.id = String(crmCustomer.id);
-    customerDTO.name = crmCustomer.name;
-    customerDTO.email = crmCustomer.email;
-    customerDTO.phone = crmCustomer.phone ?? null;
-    customerDTO.address = crmCustomer.address ?? null;
-    customerDTO.city = crmCustomer.city ?? null;
-    customerDTO.postal_code = crmCustomer.postal_code ?? null;
-    customerDTO.country = crmCustomer.country ?? null;
-    customerDTO.created_at = crmCustomer.created_at || '';
-
-    return customerDTO;
+    this.logger.log(`CRM API URL: ${this.crmApiUrl}`);
   }
 
-  async getCustomerById(id: string): Promise<CustomerDTO | null> {
-    const query = `
-      query GetCustomer($id: ID!) {
-        customer(id: $id) {
-          id
-          name
-          email
-          phone
-          address
-          city
-          postal_code
-          country
-          created_at
-          # updated_at DIHAPUS SESUAI PERMINTAAN CRM
-        }
-      }
-    `;
-    try {
-      const response = await axios.post(
-        this.CRM_GRAPHQL_ENDPOINT,
-        { query, variables: { id } },
-        { headers: this.AUTH_HEADERS },
-      );
+  // Helper untuk memetakan Customer dari respon CRM ke CustomerDTO
+  private mapCrmCustomerToDTO(customer: any): CustomerDTO | null {
+    if (!customer) return null;
 
-      if (response.data.errors) {
-        console.error('CRM GraphQL Errors in getCustomerById:', response.data.errors);
-        throw new InternalServerErrorException('CRM API returned errors for customer query.');
+    return {
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postal_code || customer.postalCode,
+      country: customer.country,
+      createdAt: customer.created_at ? new Date(customer.created_at) : new Date(),
+    };
+  }
+
+  async getCustomerById(id: string): Promise<CustomerDTO> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.crmApiUrl}/customers/${id}`, {
+          headers: this.authHeaders,
+        }),
+      );
+      const customer = this.mapCrmCustomerToDTO(response.data);
+      if (!customer) {
+        throw new NotFoundException(`Customer with ID ${id} not found`);
       }
-      if (!response.data.data || !response.data.data.customer) {
-          return null;
-      }
-      return this.mapCrmCustomerToDTO(response.data.data.customer)!;
+      return customer;
     } catch (error) {
-      console.error('Error fetching customer by ID from CRM:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Failed to fetch customer data from CRM.');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Error fetching customer ${id}: ${error.message}`);
+      throw new InternalServerErrorException('Failed to fetch customer');
     }
   }
 
   async createCustomer(input: CreateCustomerInput): Promise<CustomerDTO> {
-    const mutation = `
-      mutation CreateCustomer($input: CreateCustomerInput!) {
-        createCustomer(input: $input) {
-          id
-          name
-          email
-          phone
-          address
-          city
-          postal_code
-          country
-          created_at
-          # updated_at DIHAPUS SESUAI PERMINTAAN CRM
-        }
-      }
-    `;
     try {
-      const response = await axios.post(
-        this.CRM_GRAPHQL_ENDPOINT,
-        { query: mutation, variables: { input } },
-        { headers: this.AUTH_HEADERS },
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.crmApiUrl}/customers`,
+          input,
+          { headers: this.authHeaders },
+        ),
       );
-
-      if (response.data.errors) {
-        console.error('CRM GraphQL Errors in createCustomer:', response.data.errors);
-        throw new InternalServerErrorException('CRM API returned errors for customer creation.');
+      const customer = this.mapCrmCustomerToDTO(response.data);
+      if (!customer) {
+        throw new InternalServerErrorException('Failed to create customer: Invalid response from server');
       }
-      if (!response.data.data || !response.data.data.createCustomer) {
-          throw new InternalServerErrorException('CRM API did not return created customer data.');
-      }
-      return this.mapCrmCustomerToDTO(response.data.data.createCustomer)!;
+      return customer;
     } catch (error) {
-      console.error('Error creating customer in CRM:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Failed to create customer in CRM.');
-    }
-  }
-
-  async findAllCustomers(filters?: CustomerFilters): Promise<any> {
-    const query = `
-      query GetCustomers($filters: CustomerFilters) {
-        customers(filters: $filters) {
-          customers {
-            id
-            name
-            email
-            phone
-            address
-            city
-            postal_code
-            country
-            created_at
-            # updated_at DIHAPUS
-          }
-          totalCount
-          hasNextPage
-          hasPreviousPage
-        }
-      }
-    `;
-    try {
-      const response = await axios.post(
-        this.CRM_GRAPHQL_ENDPOINT,
-        { query, variables: { filters } },
-        { headers: this.AUTH_HEADERS },
-      );
-
-      if (response.data.errors) {
-        console.error('CRM GraphQL Errors in findAllCustomers:', response.data.errors);
-        throw new InternalServerErrorException('CRM API returned errors for all customers query.');
-      }
-      if (!response.data.data || !response.data.data.customers) {
-          return { customers: [], totalCount: 0, hasNextPage: false, hasPreviousPage: false };
-      }
-      const mappedCustomers = response.data.data.customers.customers.map(c => this.mapCrmCustomerToDTO(c)).filter((c): c is CustomerDTO => c !== null);
-
-      return {
-          customers: mappedCustomers,
-          totalCount: response.data.data.customers.totalCount,
-          hasNextPage: response.data.data.customers.hasNextPage,
-          hasPreviousPage: response.data.data.customers.hasPreviousPage,
-      };
-    } catch (error) {
-      console.error('Error fetching all customers from CRM:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Failed to fetch all customer data from CRM.');
+      this.logger.error(`Error creating customer: ${error.message}`);
+      throw new InternalServerErrorException('Failed to create customer');
     }
   }
 
   async updateCustomer(id: string, input: UpdateCustomerInput): Promise<CustomerDTO> {
-    const mutation = `
-      mutation UpdateCustomer($id: ID!, $input: UpdateCustomerInput!) {
-        updateCustomer(id: $id, input: $input) {
-          id
-          name
-          email
-          phone
-          address
-          city
-          postal_code
-          country
-          created_at
-        }
-      }
-    `;
     try {
-      const response = await axios.post(
-        this.CRM_GRAPHQL_ENDPOINT,
-        { query: mutation, variables: { id, input } },
-        { headers: this.AUTH_HEADERS },
+      const response = await firstValueFrom(
+        this.httpService.put(
+          `${this.crmApiUrl}/customers/${id}`,
+          { ...input, id },
+          { headers: this.authHeaders },
+        ),
       );
-
-      if (response.data.errors) {
-        console.error('CRM GraphQL Errors in updateCustomer:', response.data.errors);
-        const crmError = response.data.errors[0];
-        if (crmError && crmError.message.includes('not found')) {
-            throw new NotFoundException(`Customer with ID ${id} not found in CRM.`);
-        }
-        throw new InternalServerErrorException('CRM API returned errors for customer update. (Possibly missing updated_at column in CRM DB)');
+      const customer = this.mapCrmCustomerToDTO(response.data);
+      if (!customer) {
+        throw new NotFoundException(`Customer with ID ${id} not found`);
       }
-      if (!response.data.data || !response.data.data.updateCustomer) {
-          throw new InternalServerErrorException('CRM API did not return updated customer data.');
-      }
-      return this.mapCrmCustomerToDTO(response.data.data.updateCustomer)!;
+      return customer;
     } catch (error) {
-      console.error('Error updating customer in CRM:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Failed to update customer in CRM.');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(`Error updating customer ${id}: ${error.message}`);
+      throw new InternalServerErrorException('Failed to update customer');
+    }
+  }
+
+  async getCustomers(filters?: CustomerFilters): Promise<CustomerDTO[]> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.crmApiUrl}/customers`, {
+          headers: this.authHeaders,
+          params: filters,
+        }),
+      );
+      
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new InternalServerErrorException('Invalid response format from CRM service');
+      }
+      
+      return response.data
+        .map(customer => this.mapCrmCustomerToDTO(customer))
+        .filter((customer): customer is CustomerDTO => customer !== null);
+    } catch (error) {
+      this.logger.error(`Error fetching customers: ${error.message}`);
+      throw new InternalServerErrorException('Failed to fetch customers');
     }
   }
 
   async deleteCustomer(id: string): Promise<boolean> {
-    const mutation = `
-      mutation DeleteCustomer($id: ID!) {
-        deleteCustomer(id: $id)
-      }
-    `;
     try {
-      const response = await axios.post(
-        this.CRM_GRAPHQL_ENDPOINT,
-        { query: mutation, variables: { id } },
-        { headers: this.AUTH_HEADERS },
+      await firstValueFrom(
+        this.httpService.delete(`${this.crmApiUrl}/customers/${id}`, {
+          headers: this.authHeaders,
+        }),
       );
-
-      if (response.data.errors) {
-        console.error('CRM GraphQL Errors in deleteCustomer:', response.data.errors);
-        throw new InternalServerErrorException('CRM API returned errors for customer deletion.');
-      }
-      return response.data.data.deleteCustomer; 
+      return true;
     } catch (error) {
-      console.error('Error deleting customer in CRM:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Failed to delete customer in CRM.');
+      if (error.response?.status === 404) {
+        throw new NotFoundException(`Customer with ID ${id} not found`);
+      }
+      this.logger.error(`Error deleting customer ${id}: ${error.message}`);
+      throw new InternalServerErrorException('Failed to delete customer');
     }
   }
 }

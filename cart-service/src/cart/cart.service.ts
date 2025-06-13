@@ -1,5 +1,6 @@
 // src/cart/cart.service.ts
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm'; 
 import axios from 'axios';
@@ -12,8 +13,8 @@ import { CartDTO, CartItemDTO, AddToCartInput, UpdateCartItemInput, RemoveFromCa
 
 @Injectable()
 export class CartService {
-  private readonly PRODUCT_SERVICE_URL = 'http://localhost:4001/graphql';
-  private readonly CUSTOMER_SERVICE_URL = 'http://localhost:4006/graphql'; 
+  private readonly PRODUCT_SERVICE_URL: string;
+  private readonly CUSTOMER_SERVICE_URL: string;
 
   constructor(
     @InjectRepository(Cart)
@@ -21,7 +22,11 @@ export class CartService {
     @InjectRepository(CartItem)
     private cartItemRepository: Repository<CartItem>,
     private dataSource: DataSource,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.PRODUCT_SERVICE_URL = this.configService.get<string>('PRODUCT_SERVICE_URL') || 'http://product-service:4001/graphql';
+    this.CUSTOMER_SERVICE_URL = this.configService.get<string>('CUSTOMER_SERVICE_URL') || 'http://customer-adapter-service:4006/graphql';
+  }
 
   // Helper untuk menghitung total harga keranjang
   private calculateCartTotal(cartItems: CartItem[]): number {

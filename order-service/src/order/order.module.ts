@@ -1,5 +1,6 @@
 // src/order/order.module.ts
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { OrderService } from './order.service';
@@ -11,6 +12,7 @@ import { OrderItemResolver } from './order-item.resolver';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([Order, OrderItem], 'orderConnection'),
   ],
   providers: [

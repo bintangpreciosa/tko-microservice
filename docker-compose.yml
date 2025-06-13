@@ -1,26 +1,27 @@
 # docker-compose.yml
-version: '3.8' # Bisa dihapus nanti setelah semua berjalan
+version: '3.8'
 
 services:
-  # --- DATABASE SERVICES (MODIFIKASI INI) ---
+# --- DATABASE SERVICES (MODIFIKASI INI) ---
   mysql_products:
     image: mysql:8.0
     container_name: mysql_products_db
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: product_service
+      MYSQL_ROOT_PASSWORD: ""
     ports:
       - "3307:3306"
     volumes:
       - mysql_products_data:/var/lib/mysql
     networks:
       - app_network
-    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s # Beri waktu lebih lama untuk respons
-      retries: 10 # Coba lagi 10 kali
-      interval: 5s # Cek setiap 5 detik
-      start_period: 30s # Beri waktu awal 30 detik untuk inisialisasi DB
+      timeout: 30s
+      retries: 10
+      interval: 5s
+      start_period: 30s
 
   mysql_orders:
     image: mysql:8.0
@@ -28,15 +29,16 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: order_service
+      MYSQL_ROOT_PASSWORD: ""
     ports:
       - "3308:3306"
     volumes:
       - mysql_orders_data:/var/lib/mysql
     networks:
       - app_network
-    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 30s
       retries: 10
       interval: 5s
       start_period: 30s
@@ -47,15 +49,16 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: cart_service
+      MYSQL_ROOT_PASSWORD: ""
     ports:
       - "3309:3306"
     volumes:
       - mysql_carts_data:/var/lib/mysql
     networks:
       - app_network
-    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 30s
       retries: 10
       interval: 5s
       start_period: 30s
@@ -66,15 +69,16 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: payment_service
+      MYSQL_ROOT_PASSWORD: ""
     ports:
       - "3310:3306"
     volumes:
       - mysql_payments_data:/var/lib/mysql
     networks:
       - app_network
-    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 30s
       retries: 10
       interval: 5s
       start_period: 30s
@@ -85,15 +89,16 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: shipment_service
+      MYSQL_ROOT_PASSWORD: ""
     ports:
       - "3311:3306"
     volumes:
       - mysql_shipments_data:/var/lib/mysql
     networks:
       - app_network
-    healthcheck: # <--- TAMBAHKAN HEALTHCHECK INI
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 30s
       retries: 10
       interval: 5s
       start_period: 30s
@@ -112,29 +117,60 @@ services:
       DB_HOST: mysql_products
       DB_PORT: 3306
       DB_USERNAME: root
+      DB_PASSWORD: ""
       DB_DATABASE: product_service
       PORT: 4001
+      NODE_ENV: development
+      DB_SYNCHRONIZE: "true"
+      CUSTOMER_SERVICE_URL: http://customer-adapter-service:4006/graphql
     depends_on:
-      mysql_products: # Ganti dari array menjadi objek
-        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+      mysql_products:
+        condition: service_healthy
+      customer-adapter-service:
+        condition: service_healthy
+    restart: on-failure
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "POST", "-H", "Content-Type: application/json", "--data", '{"query":"{ __typename }"}', "http://localhost:4001/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  # Customer Adapter Service (tidak terhubung ke DB Anda, jadi depends_on tidak perlu healthcheck)
+  # Customer Adapter Service
   customer-adapter-service:
     build:
       context: ./customer-adapter-service
       dockerfile: Dockerfile
-    container_name: customer_adapter_service_app
+    container_name: customer_adapter_service
+    restart: unless-stopped
     ports:
       - "4006:4006"
     environment:
+      NODE_ENV: ${NODE_ENV:-production}
       PORT: 4006
-    # depends_on: # Tidak perlu depends_on ke DB Anda
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+      CRM_API_URL: ${CRM_API_URL:-http://host.docker.internal:3000}
+      CRM_API_KEY: ${CRM_API_KEY:-default-api-key}
+      TZ: Asia/Jakarta
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4006/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
   # Order Service
   order-service:
@@ -148,21 +184,29 @@ services:
       DB_HOST: mysql_orders
       DB_PORT: 3306
       DB_USERNAME: root
-      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_PASSWORD: ""
       DB_DATABASE: order_service
+      DB_SYNCHRONIZE: "true"
       PORT: 4002
       PRODUCT_SERVICE_URL: http://product-service:4001/graphql
       CUSTOMER_SERVICE_URL: http://customer-adapter-service:4006/graphql
+      NODE_ENV: development
     depends_on:
       mysql_orders:
-        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+        condition: service_healthy
       product-service:
-        condition: service_started # product-service hanya perlu mulai, tidak perlu healthcheck DB
+        condition: service_healthy
       customer-adapter-service:
-        condition: service_started # customer-adapter-service hanya perlu mulai
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "POST", "-H", "Content-Type: application/json", "--data", '{"query":"{ __typename }"}', "http://localhost:4002/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Cart Service
   cart-service:
@@ -171,26 +215,34 @@ services:
       dockerfile: Dockerfile
     container_name: cart_service_app
     ports:
-      - "4005:4005"
+      - "4003:4003"
     environment:
       DB_HOST: mysql_carts
       DB_PORT: 3306
       DB_USERNAME: root
-      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_PASSWORD: ""
       DB_DATABASE: cart_service
-      PORT: 4005
+      DB_SYNCHRONIZE: "true"
+      PORT: 4003
       PRODUCT_SERVICE_URL: http://product-service:4001/graphql
       CUSTOMER_SERVICE_URL: http://customer-adapter-service:4006/graphql
+      NODE_ENV: development
     depends_on:
       mysql_carts:
-        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
+        condition: service_healthy
       product-service:
-        condition: service_started
+        condition: service_healthy
       customer-adapter-service:
-        condition: service_started
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "POST", "-H", "Content-Type: application/json", "--data", '{"query":"{ __typename }"}', "http://localhost:4003/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Payment Service
   payment-service:
@@ -199,20 +251,21 @@ services:
       dockerfile: Dockerfile
     container_name: payment_service_app
     ports:
-      - "4003:4003"
+      - "4004:4004"
     environment:
       DB_HOST: mysql_payments
-      DB_PORT: 3306
-      DB_USERNAME: root
-      DB_PASSWORD: root_password # Jika Anda punya password di sini
-      DB_DATABASE: payment_service
-      PORT: 4003
     depends_on:
       mysql_payments:
-        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "POST", "-H", "Content-Type: application/json", "--data", '{"query":"{ __typename }"}', "http://localhost:4004/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # Shipment Service
   shipment-service:
@@ -221,20 +274,31 @@ services:
       dockerfile: Dockerfile
     container_name: shipment_service_app
     ports:
-      - "4004:4004"
+      - "4005:4005"
     environment:
       DB_HOST: mysql_shipments
       DB_PORT: 3306
       DB_USERNAME: root
-      DB_PASSWORD: root_password # Jika Anda punya password di sini
+      DB_PASSWORD: ""
       DB_DATABASE: shipment_service
-      PORT: 4004
+      DB_SYNCHRONIZE: "true"
+      PORT: 4005
+      ORDER_SERVICE_URL: http://order-service:4002/graphql
+      NODE_ENV: development
     depends_on:
       mysql_shipments:
-        condition: service_healthy # <--- PASTIKAN DB SEHAT SEBELUM INI DIMULAI
-    restart: on-failure # <--- TAMBAHKAN RESTART POLICY
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "POST", "-H", "Content-Type: application/json", "--data", '{"query":"{ __typename }"}', "http://localhost:4005/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 # Mendefinisikan volume untuk penyimpanan data persisten database
 volumes:
@@ -243,6 +307,7 @@ volumes:
   mysql_carts_data:
   mysql_payments_data:
   mysql_shipments_data:
+  mysql_customers_data:
 
 # Mendefinisikan jaringan kustom untuk service-service
 networks:
