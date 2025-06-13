@@ -19,7 +19,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 
-EXPOSE 4004
+EXPOSE 4002
 #      - product-service: 4001
 #      - customer-adapter-service: 4006
 #      - order-service: 4002
