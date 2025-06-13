@@ -31,11 +31,11 @@ import { Shipment } from './shipment/entity/shipment.entity';
     TypeOrmModule.forRoot({
       name: 'shipmentConnection',
       type: 'mysql',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: parseInt(process.env.DB_PORT ?? '3306', 10),
-      username: process.env.DB_USERNAME ?? 'root', 
-      password: process.env.DB_PASSWORD ?? '',
-      database: process.env.DB_DATABASE ?? 'shipment_service',
+      host: process.env.DB_HOST!,
+      port: parseInt(process.env.DB_PORT!, 10),
+      username: process.env.DB_USERNAME!, 
+      password: process.env.DB_PASSWORD!,
+      database: process.env.DB_DATABASE!,
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       synchronize: false,
       logging: false,
@@ -44,7 +44,6 @@ import { Shipment } from './shipment/entity/shipment.entity';
       extra: {
         connectionLimit: 10,
         charset: 'utf8mb4_bin', // Standardisasi charset
-        acquireTimeout: 30000, // Timeout untuk mendapatkan koneksi dari pool (30 detik)
       },
     }),
     // ================================================== //

@@ -33,20 +33,19 @@ import { Payment } from './payment/entity/payment.entity';
     TypeOrmModule.forRoot({
       name: 'paymentConnection',
       type: 'mysql',
-      host: process.env.DB_HOST ?? 'localhost',
-      port: parseInt(process.env.DB_PORT ?? '3306', 10),
-      username: process.env.DB_USERNAME ?? 'root', 
-      password: process.env.DB_PASSWORD ?? '',
-      database: process.env.DB_DATABASE ?? 'payment_service',
+      host: process.env.DB_HOST!,
+      port: parseInt(process.env.DB_PORT!, 10),
+      username: process.env.DB_USERNAME!, 
+      password: process.env.DB_PASSWORD!,
+      database: process.env.DB_DATABASE!,
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       synchronize: false,
       logging: false,
-      retryAttempts: 10, // Jumlah percobaan ulang koneksi
-      retryDelay: 3000,  // Penundaan 3 detik antar percobaan
+      retryAttempts: 10, 
+      retryDelay: 3000,  
       extra: {
         connectionLimit: 10,
         charset: 'utf8mb4_bin', // Standardisasi charset
-        acquireTimeout: 30000, // Timeout untuk mendapatkan koneksi dari pool (30 detik)
       },
     }),
     // ================================================== //
