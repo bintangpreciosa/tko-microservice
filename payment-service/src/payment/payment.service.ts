@@ -8,8 +8,8 @@ import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
-  // Endpoint microservice lain (sesuaikan port jika berbeda)
-  private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql';
+  // Endpoint microservice lain (menggunakan environment variable)
+  private readonly ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://order-service:4002/graphql';
 
   constructor(
     @InjectRepository(Payment, 'paymentConnection')
@@ -73,7 +73,8 @@ export class PaymentService {
         }
     } catch (error) {
         console.error('Error calling Order Service:', error.message);
-        throw new InternalServerErrorException(`Failed to connect to Order Service: ${error.message}`);
+        console.error('Order Service URL:', this.ORDER_SERVICE_URL);
+        throw new InternalServerErrorException(`Failed to connect to Order Service (${this.ORDER_SERVICE_URL}): ${error.message}`);
     }
 
     // Validasi: pastikan pembayaran tidak melebihi total_price order

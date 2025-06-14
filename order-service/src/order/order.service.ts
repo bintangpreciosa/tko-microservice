@@ -11,8 +11,8 @@ import { OrderDTO, OrderItemDTO, CreateOrderInput, UpdateOrderInput, OrderFilter
 @Injectable()
 export class OrderService {
   // Endpoint microservice lain
-  private readonly PRODUCT_SERVICE_URL = 'http://localhost:4001/graphql';
-  private readonly CUSTOMER_SERVICE_URL = 'http://localhost:4006/graphql'; // Customer Adapter Service
+  private readonly PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:4001/graphql';
+  private readonly CUSTOMER_SERVICE_URL = process.env.CUSTOMER_SERVICE_URL || 'http://customer-adapter-service:4006/graphql'; // Customer Adapter Service
 
   constructor(
     @InjectRepository(Order, 'orderConnection')

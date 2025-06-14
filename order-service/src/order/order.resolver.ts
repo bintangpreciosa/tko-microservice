@@ -7,8 +7,8 @@ import { NotFoundException } from '@nestjs/common';
 @Resolver(() => OrderDTO)
 export class OrderResolver {
   // Endpoint microservice lain 
-  private readonly CUSTOMER_ADAPTER_SERVICE_URL = 'http://localhost:4006/graphql';
-  private readonly PRODUCT_SERVICE_URL = 'http://localhost:4001/graphql';
+  private readonly CUSTOMER_ADAPTER_SERVICE_URL = process.env.CUSTOMER_SERVICE_URL || 'http://customer-adapter-service:4006/graphql';
+  private readonly PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:4001/graphql';
 
   constructor(
     private readonly orderService: OrderService,

@@ -122,7 +122,7 @@ services:
     networks:
       - app_network
 
-  # Customer Adapter Service
+  # Customer Adapter Service - Hanya sebagai adapter ke CRM di port 3000
   customer-adapter-service:
     build:
       context: ./customer-adapter-service
@@ -131,8 +131,14 @@ services:
     ports:
       - "4006:4006"
     environment:
+      NODE_ENV: development
       PORT: 4006
+      # URL ke CRM eksternal (ganti dengan URL yang sesuai)
       CRM_SERVICE_URL: http://host.docker.internal:3000/graphql
+      # Timeout untuk koneksi ke CRM (dalam milidetik)
+      CRM_REQUEST_TIMEOUT: "5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Untuk akses ke host dari container
     restart: on-failure
     networks:
       - app_network
@@ -207,9 +213,13 @@ services:
       DB_PASSWORD: ""
       DB_DATABASE: payment_service
       PORT: 4003
+      # URL untuk mengakses Order Service dari dalam Docker network
+      ORDER_SERVICE_URL: http://order-service:4002/graphql
     depends_on:
       mysql_payments:
         condition: service_healthy
+      order-service:
+        condition: service_started
     restart: on-failure
     networks:
       - app_network
@@ -229,6 +239,7 @@ services:
       DB_PASSWORD: ""
       DB_DATABASE: shipment_service
       PORT: 4004
+      ORDER_SERVICE_URL: http://order-service:4002/graphql
     depends_on:
       mysql_shipments:
         condition: service_healthy

@@ -65,7 +65,9 @@
         `;
         let orderFromOrderService: any;
         try {
-            const response = await axios.post('http://localhost:4002/graphql', { // <-- URL Order Service
+            const orderServiceUrl = process.env.ORDER_SERVICE_URL || 'http://order-service:4002/graphql';
+            console.log(`Connecting to Order Service at: ${orderServiceUrl}`);
+            const response = await axios.post(orderServiceUrl, {
                 query: orderQuery,
                 variables: { orderId: shipment.order_id }
             });

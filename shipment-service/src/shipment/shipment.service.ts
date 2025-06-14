@@ -8,7 +8,7 @@
 
     @Injectable()
     export class ShipmentService {
-      private readonly ORDER_SERVICE_URL = 'http://localhost:4002/graphql'; 
+      private readonly ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://order-service:4002/graphql';
 
       constructor(
         @InjectRepository(Shipment, 'shipmentConnection')

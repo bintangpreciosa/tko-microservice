@@ -1,31 +1,38 @@
+# Build stage
 FROM node:20 AS builder
 
 WORKDIR /app
 
-COPY package.json ./
-COPY package-lock.json ./
+# Copy package files first for better caching
+COPY package*.json ./
 
+
+# Install dependencies
 RUN npm install --legacy-peer-deps
 
+# Copy source code
 COPY . .
 
+# Build the application
 RUN npm run build
 
-FROM node:20
+# Production stage
+FROM node:20-slim
 
 WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production --legacy-peer-deps
+
+# Copy built application from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
 
+# Expose the port the app runs on
 EXPOSE 4003
-#      - product-service: 4001
-#      - customer-adapter-service: 4006
-#      - order-service: 4002
-#      - cart-service: 4005
-#      - payment-service: 4003
-#      - shipment-service: 4004
 
-CMD ["npm", "run", "start:prod"]
+# Command to run the application
+CMD ["node", "dist/src/main"]
 
