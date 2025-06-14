@@ -23,7 +23,7 @@ export class OrderItem {
   price: number;
 
   // Definisi relasi Many-to-One dengan Order
-  @ManyToOne(() => Order, order => order.order_items)
+  @ManyToOne(() => Order, order => order.order_items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' }) 
   order: Order;
 }
