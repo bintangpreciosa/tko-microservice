@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "rimraf dist && nest build",
+    "build": "npx rimraf dist && npx nest build",
     "typeorm": "npm run build && npx typeorm --dataSource dist/ormconfig.js",
     "migration:generate": "npm run typeorm migration:generate",
     "migration:run": "npm run typeorm migration:run",

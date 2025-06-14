@@ -15,8 +15,12 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
+
 # Build the application
 RUN npm run build
+
+# Verify the build output
+RUN ls -la dist/
 
 # Production stage
 FROM node:20-slim
@@ -37,5 +41,4 @@ ENV NODE_ENV=production
 EXPOSE 4006
 
 # Start the application
-CMD ["node", "dist/main"]
-
+CMD ["node", "dist/src/main"]

@@ -36,8 +36,8 @@ import { DateTimeScalar } from './common/scalars/datetime.scalar';
       username: process.env.DB_USERNAME!, 
       password: process.env.DB_PASSWORD!,
       database: process.env.DB_DATABASE!,
-      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: false, 
+      entities: [join(__dirname, 'product/entity/*.entity.{ts,js}')], // Path spesifik ke entity
+      synchronize: true, // Aktifkan untuk development
       logging: false,
       autoLoadEntities: true,
       retryAttempts: 10, // Jumlah percobaan ulang koneksi

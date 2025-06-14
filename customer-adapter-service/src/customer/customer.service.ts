@@ -5,7 +5,7 @@ import { CustomerDTO, CreateCustomerInput, UpdateCustomerInput, CustomerFilters 
 
 @Injectable()
 export class CustomerService {
-  private readonly CRM_GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql';
+  private readonly CRM_GRAPHQL_ENDPOINT = process.env.CRM_SERVICE_URL || 'http://localhost:3000/graphql';
 
   // Header untuk autentikasi (jika diperlukan)
   private readonly AUTH_HEADERS = {

@@ -23,7 +23,7 @@ const configOptions: DataSourceOptions = {
   entities: [__dirname + '/dist/product/entity/*.entity.{js,ts}'], 
   migrations: [__dirname + '/dist/migrations/*.{js,ts}'], 
 
-  synchronize: false, 
+  synchronize: true, // Aktifkan untuk development - akan sync otomatis dengan entity
   logging: true, 
   migrationsRun: false, 
   

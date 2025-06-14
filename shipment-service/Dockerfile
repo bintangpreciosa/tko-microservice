@@ -5,7 +5,22 @@ WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./
 
-RUN npm install --legacy-peer-deps
+# Set npm config for better reliability
+RUN npm config set fetch-retry-mintimeout 30000 \
+    && npm config set fetch-retry-maxtimeout 180000 \
+    && npm config set fetch-retries 10 \
+    && npm config set registry https://registry.npmjs.org/
+
+# Install global dependencies
+RUN npm install -g rimraf @nestjs/cli
+
+# Install with retry logic including dev dependencies
+RUN for i in {1..3}; do \
+      npm install --legacy-peer-deps --include=dev && break || \
+      (echo "Attempt $i failed, retrying..." && \
+       sleep 10 && \
+       npm cache clean --force); \
+    done
 
 COPY . .
 

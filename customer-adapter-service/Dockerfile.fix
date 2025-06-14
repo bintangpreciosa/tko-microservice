@@ -7,7 +7,14 @@ RUN npm install -g @nestjs/cli
 
 # Copy package files first for better layer caching
 COPY package*.json ./
-COPY tsconfig*.json ./
+
+
+# Install project dependencies with retry logic
+RUN npm config set fetch-retry-mintimeout 30000 \
+    && npm config set fetch-retry-maxtimeout 180000 \
+    && npm config set fetch-retries 10 \
+    && npm config set registry https://registry.npmjs.org/
+
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
@@ -30,6 +37,13 @@ RUN npm install --only=production
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
+# Copy necessary files for production
+COPY --from=builder /app/tsconfig*.json ./
+COPY --from=builder /app/package.json ./
+
+# Create necessary directories
+RUN mkdir -p /app/node_modules
+
 # Set NODE_ENV to production
 ENV NODE_ENV=production
 
@@ -37,5 +51,4 @@ ENV NODE_ENV=production
 EXPOSE 4006
 
 # Start the application
-CMD ["node", "dist/main"]
-
+CMD ["node", "dist/src/main"]

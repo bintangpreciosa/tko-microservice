@@ -37,8 +37,8 @@ import { OrderItem } from './order/entity/order-item.entity';
       username: process.env.DB_USERNAME!, 
       password: process.env.DB_PASSWORD!,
       database: process.env.DB_DATABASE!,
-      entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: false,
+      entities: [join(__dirname, '**/*.entity.{ts,js}')],
+      synchronize: true, // Aktifkan untuk development
       logging: false,
       retryAttempts: 10, // Jumlah percobaan ulang koneksi
       retryDelay: 3000,  // Penundaan 3 detik antar percobaan
